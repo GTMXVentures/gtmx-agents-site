@@ -7,6 +7,8 @@
 	"compilerOptions": {
 		// Vite/esbuild emits the JS; tsc is a type-checker only.
 		"noEmit": true,
+		"allowJs": true,
+		"checkJs": false,
 
 		// ESNext + bundler resolution: leave module syntax alone and resolve imports
 		// the way Vite does (package.json "exports", extensionless paths).

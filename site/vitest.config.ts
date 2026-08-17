@@ -25,7 +25,7 @@ export default defineConfig({
 		setupFiles: ["./tests/setup.ts"],
 		// Colocated tests only. `tests/` holds setup/helpers, not test files, so it
 		// is not in this glob.
-		include: ["src/**/__tests__/**/*.test.{ts,tsx}"],
+		include: ["src/**/__tests__/**/*.test.{ts,tsx,js,jsx}"],
 		exclude: ["node_modules", "dist", ".wrangler"],
 	},
 });
