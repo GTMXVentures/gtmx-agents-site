@@ -1,0 +1,16 @@
+# Ownership boundaries for review routing.
+#
+# The split: application code (site/) is open to any contributor — CI is the
+# gate there. Infrastructure and the deploy pipeline are owned, because a
+# mistake in them doesn't fail a test, it changes DNS or ships to production.
+# PRs touching owned paths auto-request review from the owner; with branch
+# protection's "require review from Code Owners" enabled, that review blocks
+# the merge for those paths only.
+#
+# Note the deeper guardrail behind this file: contributors have no Cloudflare
+# tokens and no Pulumi stack access. Even a merged change to infra/ does
+# nothing until an infra owner runs `pulumi up` locally.
+
+/infra/            @ramanshrivastava
+/.github/          @ramanshrivastava
+/site/wrangler.jsonc  @ramanshrivastava
