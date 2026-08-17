@@ -1,0 +1,5 @@
+config:
+  gtmxsite:accountId: 9237f076a6f4f2f834a0509132a99f7a
+  gtmxsite:zoneName: gtmxagents.com
+  gtmxsite:workerName: gtmx-agents-site
+  gtmxsite:attachWorkerDomain: "false"
