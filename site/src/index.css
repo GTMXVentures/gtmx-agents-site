@@ -22,32 +22,49 @@
  *
  * Dark-only site: there is no theme toggle and no `.dark` class. Write styles
  * directly against these tokens.
+ *
+ * DESIGN INTENT — "agent console".
+ * The product is a team of agents that runs a fundraise; the page is styled as
+ * the console you would watch them from. That gives three rules everything else
+ * follows from:
+ *   1. The page is TRUE BLACK, not a dark grey. Panels are lifted off it by a
+ *      few points of luminance plus a hairline, the way a terminal window sits
+ *      on a black desktop. This is why --color-base is #000000 and every other
+ *      surface is defined as a lift from it rather than a tint of a grey.
+ *   2. ONE saturated colour — signal green — and it means "live". Status dots,
+ *      running-state pills, active figures. It is never used for decoration, so
+ *      that when a founder sees green they can trust it is reporting something.
+ *   3. The PRIMARY action is white, not green. Green is the system talking about
+ *      itself; white is the one thing the visitor is asked to do. Keeping those
+ *      two apart is what stops the CTA competing with eight status pills.
  * ============================================================================= */
 
 @theme {
-	/* --- Surfaces (near-black, slightly blue — reads as "product", not "print") */
-	--color-base: #0b0d12; /* page background */
-	--color-mantle: #07080d; /* deeper wells: footer, code blocks */
-	--color-surface: #141822; /* raised card */
-	--color-surface-hover: #1b2130; /* card hover / subtle fill */
-	--color-line: #262c3a; /* 1px hairline border — never pure black */
+	/* --- Surfaces. True black page; everything else is a measured lift from it.
+	 * The steps are small on purpose (5 / 10 / 16 points) — on a black page a
+	 * card only needs a few points plus a hairline to separate, and larger steps
+	 * read as grey boxes rather than as lit panels. */
+	--color-base: #000000; /* page background — true black */
+	--color-mantle: #050506; /* full-bleed section bands, one step off black */
+	--color-surface: #0a0b0d; /* raised card / panel */
+	--color-surface-hover: #101216; /* card hover, table row hover */
+	--color-line: #1c1e24; /* 1px hairline border — never pure black */
 
-	/* --- Text ramp. The body ramp is cool (blue-grey); the DISPLAY ink is warm
-	 * bone on purpose. Setting the serif headlines a few degrees warmer than the
-	 * sans copy is what makes them read as printed ink rather than as the same
-	 * text at a larger size — it is the reason the didone below carries on a
-	 * near-black page. Do not collapse --color-ink-display into --color-ink. */
-	--color-ink: #e8ecf5; /* primary copy */
-	--color-ink-display: #f5efe4; /* serif headlines ONLY — warm bone */
-	--color-ink-muted: #9aa4b8; /* secondary copy, labels */
-	--color-ink-subtle: #6b7488; /* meta, disabled, legal */
+	/* --- Text ramp */
+	--color-ink: #f4f5f7; /* primary copy, display headlines */
+	--color-ink-muted: #9aa0aa; /* secondary copy, descriptions */
+	--color-ink-subtle: #6a707b; /* mono micro-labels, meta, legal */
 
-	/* --- Brand accent (indigo) + one supporting signal colour set */
-	--color-accent: #5b8cff;
-	--color-accent-hover: #7ba3ff; /* accent lightened ~12% for hover */
-	--color-accent-ink: #07080d; /* text ON an accent fill (= mantle) */
-	--color-accent-soft: #17203a; /* mix(accent 14%, base) — tinted wash */
-	--color-success: #4ade80;
+	/* --- Signal green. The ONE saturated hue, reserved for live/system state:
+	 * status dots, running-state pills, the caret, active figures. Never a
+	 * decorative fill and never the primary button — see design intent above. */
+	--color-accent: #48e08a;
+	--color-accent-hover: #6feaa6; /* accent lightened ~12% for hover */
+	--color-accent-ink: #03150b; /* text ON an accent fill — near-black green */
+	--color-accent-soft: #0a1911; /* mix(accent 10%, base) — pill background */
+	--color-accent-line: #1d3a2a; /* mix(accent 22%, base) — pill border */
+
+	--color-success: #48e08a; /* = accent; "live" and "succeeded" are one colour */
 	--color-warning: #fbbf24;
 	--color-danger: #f87171;
 
@@ -62,58 +79,75 @@
 	 * exists to support runtime theme switching, which a dark-only marketing
 	 * page does not need — and var() in @theme is exactly what the rule above
 	 * forbids. When `npx shadcn add` writes a :root block, fold its values into
-	 * this block as hex rather than keeping both. */
-	--color-background: #0b0d12; /* = base */
-	--color-foreground: #e8ecf5; /* = ink */
-	--color-card: #141822; /* = surface */
-	--color-card-foreground: #e8ecf5;
-	--color-popover: #141822;
-	--color-popover-foreground: #e8ecf5;
-	--color-primary: #5b8cff; /* = accent */
-	--color-primary-foreground: #07080d; /* = accent-ink */
-	--color-secondary: #141822;
-	--color-secondary-foreground: #e8ecf5;
-	--color-muted: #141822;
-	--color-muted-foreground: #9aa4b8; /* = ink-muted */
-	--color-accent-foreground: #e8ecf5;
+	 * this block as hex rather than keeping both.
+	 *
+	 * --color-primary is WHITE, not the accent. Any shadcn <Button> dropped in
+	 * later therefore inherits the page's real primary action styling for free;
+	 * a green button would silently contradict the colour rule above. */
+	--color-background: #000000; /* = base */
+	--color-foreground: #f4f5f7; /* = ink */
+	--color-card: #0a0b0d; /* = surface */
+	--color-card-foreground: #f4f5f7;
+	--color-popover: #0a0b0d;
+	--color-popover-foreground: #f4f5f7;
+	--color-primary: #ffffff; /* the one action the visitor is asked to take */
+	--color-primary-foreground: #000000;
+	/* White dimmed ~16%. A white button needs an explicit hover value: dropping to
+	 * --color-ink is a 3% shift nobody perceives, and dropping to --color-ink-muted
+	 * turns it muddy grey. This is the one step that still reads as white. */
+	--color-primary-hover: #d5d8dd;
+	--color-secondary: #0a0b0d;
+	--color-secondary-foreground: #f4f5f7;
+	--color-muted: #0a0b0d;
+	--color-muted-foreground: #9aa0aa; /* = ink-muted */
+	--color-accent-foreground: #f4f5f7;
 	--color-destructive: #f87171; /* = danger */
-	--color-destructive-foreground: #07080d;
-	--color-border: #262c3a; /* = line */
-	--color-input: #262c3a;
-	--color-ring: #5b8cff; /* = accent */
+	--color-destructive-foreground: #03150b;
+	--color-border: #1c1e24; /* = line */
+	--color-input: #1c1e24;
+	--color-ring: #48e08a; /* = accent */
 
 	/* --- Type ------------------------------------------------------------------
-	 * Body and mono stay SYSTEM stacks: zero webfont bytes on the critical path
-	 * for the text that makes up 95% of the page.
+	 * Body copy stays on a SYSTEM stack: zero webfont bytes for the text that is
+	 * most of the page, and no FOUT on paragraphs.
 	 *
-	 * Exactly ONE webfont is loaded — Bodoni Moda, for display only. The
-	 * reference is deliberate: investment-banking tombstone notices and offering
-	 * documents are set in didones, and this is a product sold to founders and
-	 * bankers. It is the page's one aesthetic risk, so it is fenced in:
-	 *   - display sizes only (≥1.125rem). A didone's hairlines vanish on a dark
-	 *     background at body sizes — never set copy in --font-display.
-	 *   - weight 400–600 only. Below 400 the thins break up on dark.
-	 * The <link> in index.html uses display=swap, so the system fallback below
-	 * paints the LCP headline immediately and Bodoni swaps in; the fallback list
-	 * is didone-adjacent so the reflow is small. */
+	 * Exactly ONE webfont is loaded — Space Grotesk, for display only (headlines,
+	 * stat figures, buttons, nav). It is a geometric grotesque drawn from a
+	 * monospace skeleton, which is precisely the pairing this page needs: the big
+	 * bold headlines and the monospace status readouts read as one voice instead
+	 * of as two borrowed fonts. Weights 500–700 are the display range; the axis
+	 * is loaded 400–700 so a medium weight is available for panel labels.
+	 *
+	 * --font-mono is a system stack rather than a second webfont. The micro-labels
+	 * and status lines are short, and doubling the font payload to style text at
+	 * 11px is a bad trade on a page whose LCP is the headline. */
 	--font-sans:
 		ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 	--font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 	--font-display:
-		"Bodoni Moda", "Bodoni MT", Didot, "Didot LT STD", "Hoefler Text", Garamond, "Times New Roman",
-		serif;
+		"Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+		Arial, sans-serif;
 
-	/* --- Radius. Two steps only. The card radius groups panels; the control
-	 * radius is tighter so buttons and inputs sit closer to the hairline/print
-	 * discipline of the page instead of reading as pills. */
+	/* --- Radius. Two steps only: panels group at the card radius, controls sit a
+	 * step tighter so buttons and inputs read as instruments rather than pills.
+	 * (Status pills are the deliberate exception and use rounded-full.) */
 	--radius-card: 14px;
-	--radius-control: 6px;
+	--radius-control: 8px;
 
-	/* --- Motion. One keyframe, used only for the hero's load sequence (stagger
-	 * is set inline per element). Nothing below the fold animates: scroll-linked
-	 * reveals would need an IntersectionObserver for an effect that has already
-	 * finished by the time it is scrolled into view. */
+	/* --- Motion.
+	 * Three keyframes, and every one of them REPORTS SOMETHING — there is no
+	 * decorative animation on this page. `rise` is the hero's load sequence;
+	 * `pulse-ring` and `caret` are the two live-state indicators, and they are
+	 * the only things on the page that loop.
+	 *
+	 * Both looping keyframes are written so their FINAL frame is the resting
+	 * state (ring fully faded, caret visible). The reduced-motion block below
+	 * collapses every animation to 0.01ms, which effectively snaps an element to
+	 * its last frame — so this is what makes the reduced-motion rendering land
+	 * on something sensible instead of a half-scaled ghost ring. */
 	--animate-rise: rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+	--animate-pulse-ring: pulse-ring 2400ms cubic-bezier(0.16, 1, 0.3, 1) infinite;
+	--animate-caret: caret 1100ms steps(1, end) infinite;
 }
 
 @keyframes rise {
@@ -127,6 +161,28 @@
 	}
 }
 
+@keyframes pulse-ring {
+	from {
+		opacity: 0.55;
+		transform: scale(1);
+	}
+	to {
+		opacity: 0;
+		transform: scale(3.2);
+	}
+}
+
+@keyframes caret {
+	0%,
+	50% {
+		opacity: 0;
+	}
+	51%,
+	100% {
+		opacity: 1;
+	}
+}
+
 @layer base {
 	:root {
 		/* Makes native scrollbars, form controls and <select> popups render dark —
@@ -135,8 +191,8 @@
 	}
 
 	html {
-		/* The only in-page navigation is the "Join the waitlist" anchor → #waitlist.
-		 * Overridden in the reduced-motion block below. */
+		/* In-page navigation only: the nav and both hero CTAs anchor to #agents,
+		 * #database and #waitlist. Overridden in the reduced-motion block below. */
 		scroll-behavior: smooth;
 	}
 
@@ -144,21 +200,13 @@
 		@apply bg-background text-foreground font-sans antialiased;
 	}
 
-	/* Anchor/keyboard focus must stay visible on a dark background. */
+	/* Anchor/keyboard focus must stay visible on a black background. */
 	:focus-visible {
 		@apply outline-2 outline-offset-2 outline-accent;
 	}
 
-	/* Bodoni Moda ships an optical-size axis (6–96). `auto` is the browser default
-	 * but is stated explicitly here because a stray `font-optical-sizing: none`
-	 * from a reset would flatten the headlines back to text-size shapes — which is
-	 * most of what makes the display face worth loading at all. */
-	.font-display {
-		font-optical-sizing: auto;
-	}
-
 	/* Honours the OS "reduce motion" setting for everything at once, including
-	 * the hero's load sequence.
+	 * the hero's load sequence and both live-state indicators.
 	 *
 	 * !important is load-bearing here and is the one place in this file it is
 	 * allowed: the hero's stagger is set as an INLINE `animationDelay` style (see
@@ -191,11 +239,19 @@
 }
 
 @layer components {
-	/* The page's one repeated typographic device: a small monospace, wide-tracked
-	 * label. It marks structure (section eyebrows, ledger headers, form labels)
-	 * without ever competing with the display serif. Defined once here rather
-	 * than as a five-utility string repeated in eight places. */
+	/* The page's repeated typographic device: a small monospace, wide-tracked
+	 * label. It marks structure (section eyebrows, panel headers, table headers,
+	 * form labels) and is the visual rhyme that ties the status readouts to the
+	 * headline face. Defined once here rather than as a five-utility string
+	 * repeated a dozen times. */
 	.eyebrow {
-		@apply font-mono text-[0.6875rem] text-ink-subtle uppercase tracking-[0.18em];
+		@apply font-mono text-[0.6875rem] text-ink-subtle uppercase tracking-[0.16em];
+	}
+
+	/* Live-state pill. Only ever wraps text that describes what an agent is doing
+	 * RIGHT NOW — see the colour rule in the design-intent block. If it is used
+	 * for a static label the green stops meaning "live". */
+	.status-pill {
+		@apply inline-flex items-center gap-1.5 rounded-full border border-accent-line bg-accent-soft px-2.5 py-0.5 font-mono text-[0.6875rem] text-accent leading-5;
 	}
 }

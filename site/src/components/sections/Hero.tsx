@@ -1,121 +1,222 @@
 import type { ReactElement } from "react";
+import { PulseDot } from "@/components/PulseDot";
+import { COVERAGE, formatCount } from "@/data/coverage";
 
 /**
- * Hero — the thesis of the page.
+ * Hero — the console view.
  *
- * The signature element is the LEDGER below the headline: a raise is worked as a
- * list, so the page opens with the artifact a raise actually produces (stage →
- * count → what happened) rather than a product screenshot. It is set as a bare
- * typeset ledger — hairlines, monospace, tabular figures, no card — so it reads
- * as an appendix in a deal document, which is the vernacular this audience lives
- * in. The 01–04 numbering is not decoration: it is the same four-stage sequence
- * the Agents section expands, and a raise genuinely runs in that order.
+ * Two panels side by side on large screens: the LEFT states what the product
+ * does, the RIGHT shows it doing it. That split is the whole argument. A
+ * fundraise is normally invisible work happening in someone's inbox, so the
+ * page's job is to make it look like a system with a status, and the right-hand
+ * panel is the page's signature element — a live roster of the four agents with
+ * what each one is doing.
  *
- * The <h1> carries the brand as a visible eyebrow line, so its accessible name
- * contains "GTMX Agents" — matching index.html's <noscript> H1 and the smoke
- * test in src/__tests__/App.test.tsx. Do not split the subline paragraph with
- * child elements: that test matches its DIRECT text nodes.
+ * The two panels are peers, not a hero-plus-screenshot: the right panel is real
+ * markup on the same tokens, not an image of a UI. That is deliberate. A
+ * screenshot of a product that has not launched is a promise; a rendered panel
+ * is a specification, and it stays honest because it only ever states the four
+ * agents' standing jobs, never fabricated per-fund activity.
+ *
+ * Every figure quoted here comes from @/data/coverage — no number on this page
+ * is typed twice.
  */
 
 /**
- * Illustrative, and labelled as such in the UI. The product is pre-launch — these
- * are not real portfolio relationships, and the copy must never imply they are.
+ * The four agents, in the order a raise runs them. The numbering is not
+ * decoration: 01 must complete before 02 has a list to work, and the same
+ * numbers key the detail section further down the page, so the roster here and
+ * the explanation there are visibly one system.
+ *
+ * `status` is present-tense on purpose — it is what the pill renders, and the
+ * pill's green means "running now" (see the colour rule in index.css).
  */
-const LEDGER_ROWS = [
+const AGENT_ROSTER = [
 	{
-		id: "match",
+		id: "matching",
 		stage: "01",
-		label: "Match",
-		value: "38 / 214",
-		detail: "funds on thesis, ranked with the reason attached",
+		name: "Matching Agent",
+		status: `screening ${formatCount(COVERAGE.firms)} funds`,
+		detail: "Stage, sector, cheque size, geography, and the thesis a partner has actually written.",
 	},
 	{
-		id: "reach",
+		id: "outreach",
 		stage: "02",
-		label: "Reach",
-		value: "38",
-		detail: "approaches drafted · 12 warm paths found",
+		name: "Outreach Agent",
+		status: "drafting fund-specific approaches",
+		detail:
+			"One message per fund, built from that fund's thesis and your traction — never a blast.",
 	},
 	{
-		id: "track",
+		id: "tracking",
 		stage: "03",
-		label: "Track",
-		value: "61",
-		detail: "live threads across email, LinkedIn and meetings",
+		name: "Tracking Agent",
+		status: "watching live threads",
+		detail: "Email, LinkedIn and meeting notes reconciled into a single state per fund.",
 	},
 	{
-		id: "prep",
+		id: "diligence",
 		stage: "04",
-		label: "Prep",
-		value: "22",
-		detail: "diligence questions answered from your own numbers",
+		name: "Diligence Agent",
+		status: "assembling the data room",
+		detail: "The questions funds ask at your stage, answered from your own numbers.",
 	},
+];
+
+/**
+ * Reads left-to-right as the funnel a founder actually cares about: how many
+ * firms exist, how many have a human attached, how many can be reached today.
+ */
+const HERO_STATS = [
+	{ id: "firms", value: formatCount(COVERAGE.firms), label: "investor firms" },
+	{ id: "partners", value: formatCount(COVERAGE.partners), label: "named partners" },
+	{ id: "reachable", value: formatCount(COVERAGE.reachablePartners), label: "reachable today" },
+];
+
+const COMMITMENTS = [
+	"Founder-side, never fund-side",
+	"Every send reviewed by you",
+	"One state per fund, not four inboxes",
 ];
 
 export function Hero(): ReactElement {
 	return (
-		<section aria-labelledby="hero-heading">
-			<div className="mx-auto max-w-6xl px-6 pt-16 pb-14 sm:px-8 sm:pt-24 sm:pb-20">
+		<section aria-labelledby="hero-heading" className="px-4 pt-4 pb-16 sm:px-6 sm:pb-24">
+			<div className="mx-auto grid max-w-6xl gap-4 lg:grid-cols-2">
+				{/* --- Left panel: the claim ---------------------------------------- */}
 				{/* animation-delay is set inline, not via a utility: `animate-rise` is the
 				    `animation` SHORTHAND, and a separately-emitted delay utility can sort
 				    before it and get reset to 0. The reduced-motion block in index.css
 				    uses !important, which beats inline styles, so this stays accessible. */}
-				<h1 id="hero-heading" className="max-w-4xl animate-rise">
-					<span className="eyebrow block">GTMX Agents — by GTMX Ventures</span>
-					<span className="mt-5 block text-balance font-display font-medium text-[clamp(2.5rem,7vw,5.25rem)] text-ink-display leading-[0.98] tracking-[-0.02em] sm:mt-7">
-						Most of a raise is logistics.{" "}
-						<span className="text-ink-muted italic">The rest is you.</span>
-					</span>
-				</h1>
+				<div className="animate-rise rounded-card border border-line bg-surface p-7 sm:p-10">
+					<p className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1 font-mono text-[0.6875rem] text-ink-muted">
+						<PulseDot />
+						Pre-launch · agent-run fundraising
+					</p>
 
-				<p
-					className="mt-8 max-w-2xl animate-rise text-pretty text-ink-muted text-lg leading-[1.65] sm:text-xl"
-					style={{ animationDelay: "120ms" }}
-				>
-					GTMX Agents runs the mechanical half of your round — investor matching, outreach, and
-					diligence — end to end, so the only thing left on your calendar is the conversation.
-				</p>
-
-				<div
-					className="mt-10 flex animate-rise flex-wrap items-center gap-x-6 gap-y-4"
-					style={{ animationDelay: "220ms" }}
-				>
-					<a
-						href="#waitlist"
-						className="inline-flex items-center justify-center rounded-control bg-accent px-6 py-3 font-medium text-accent-ink text-sm transition-colors duration-200 hover:bg-accent-hover"
+					<h1
+						id="hero-heading"
+						className="mt-7 text-balance font-display font-bold text-[clamp(2.75rem,6.5vw,4.5rem)] text-ink leading-[0.95] tracking-[-0.035em]"
 					>
-						Join the waitlist
-					</a>
-					<p className="eyebrow">Pre-launch · first cohort forming</p>
-				</div>
-			</div>
+						Agents run the raise.
+					</h1>
 
-			{/* --- The ledger ---------------------------------------------------- */}
-			<div
-				className="animate-rise border-line/70 border-y bg-mantle"
-				style={{ animationDelay: "340ms" }}
-			>
-				<div className="mx-auto max-w-6xl px-6 py-8 sm:px-8 sm:py-10">
-					<div className="flex items-baseline justify-between gap-x-4 border-line/70 border-b pb-4">
-						<h2 className="eyebrow">Agent run — Series A, week three</h2>
-						<p className="eyebrow text-ink-subtle/80">Illustrative</p>
+					{/* The status line is the page's one piece of theatre, and it is kept
+					    honest: the only figure it quotes is the database count, which is
+					    real and shared with the stat trio below. It never claims a live
+					    per-user session. */}
+					<p className="mt-6 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-accent text-xs">
+						<PulseDot />
+						<span>agent_team online</span>
+						<span aria-hidden="true" className="text-ink-subtle">
+							·
+						</span>
+						<span>watching {formatCount(COVERAGE.firms)} funds</span>
+						<span
+							aria-hidden="true"
+							className="inline-block h-[1em] w-[0.5em] translate-y-[0.1em] animate-caret bg-accent"
+						/>
+					</p>
+
+					<p className="mt-6 max-w-lg text-ink-muted leading-[1.7]">
+						GTMX Agents runs sourcing-in-reverse for founders: investor matching, outreach
+						orchestration, conversation tracking, and diligence prep — one agent team working your
+						round end to end.
+					</p>
+
+					{/* <dl> rather than three divs: each figure genuinely is a term and its
+					    value. The label is repeated as an sr-only <dt> so the number is
+					    never announced bare — "22,402" alone is meaningless in a screen
+					    reader's linear pass. */}
+					<dl className="mt-9 grid grid-cols-3 gap-x-4">
+						{HERO_STATS.map((stat) => (
+							<div key={stat.id}>
+								<dt className="sr-only">{stat.label}</dt>
+								<dd className="font-display font-bold text-2xl text-ink tabular-nums tracking-[-0.02em] sm:text-3xl">
+									{stat.value}
+								</dd>
+								<dd aria-hidden="true" className="mt-1 text-ink-subtle text-xs">
+									{stat.label}
+								</dd>
+							</div>
+						))}
+					</dl>
+
+					<div className="mt-9 flex flex-col gap-3 sm:flex-row">
+						<a
+							href="#waitlist"
+							className="inline-flex items-center justify-center rounded-control bg-primary px-6 py-3 font-display font-medium text-primary-foreground text-sm transition-colors duration-200 hover:bg-primary-hover"
+						>
+							Join the waitlist
+						</a>
+						<a
+							href="#database"
+							className="inline-flex items-center justify-center rounded-control border border-line px-6 py-3 font-display font-medium text-ink text-sm transition-colors duration-200 hover:border-ink-subtle hover:bg-surface-hover"
+						>
+							See the database
+						</a>
 					</div>
-					<ul className="divide-y divide-line/70">
-						{LEDGER_ROWS.map((row) => (
-							<li
-								key={row.id}
-								className="grid grid-cols-[2.25rem_1fr] items-baseline gap-x-4 gap-y-1 py-4 sm:grid-cols-[2.75rem_6rem_6.5rem_1fr] sm:gap-y-0"
+
+					<p className="mt-5 text-ink-subtle text-xs">
+						Built on the GTMX Ventures investor database.
+					</p>
+				</div>
+
+				{/* --- Right panel: the roster -------------------------------------- */}
+				<div
+					className="animate-rise rounded-card border border-line bg-surface"
+					style={{ animationDelay: "140ms" }}
+				>
+					<div className="flex items-baseline justify-between gap-4 border-line border-b px-6 py-5 sm:px-8">
+						<div>
+							{/* The panel's own <h2> — which is what makes the agent names below
+							    legal <h3>s. Without a heading here the roster would be four
+							    orphaned h3s hanging off the page's h1. */}
+							<h2 className="flex items-center gap-2 font-mono text-[0.6875rem] text-accent uppercase tracking-[0.16em]">
+								<PulseDot />
+								Live agent team
+							</h2>
+							<a
+								href="#agents"
+								className="mt-1.5 inline-block font-display font-medium text-ink text-sm transition-colors duration-200 hover:text-accent"
 							>
-								<span className="font-mono text-ink-subtle text-xs tabular-nums">{row.stage}</span>
-								<span className="font-medium text-ink">{row.label}</span>
-								{/* col-start-2 on mobile keeps the value under the label, not under
-								    the stage number, so the two-column stack still reads as a row. */}
-								<span className="col-start-2 font-mono text-accent text-sm tabular-nums sm:col-start-auto">
-									{row.value}
+								What each agent does &darr;
+							</a>
+						</div>
+						<p className="eyebrow whitespace-nowrap">04 agents</p>
+					</div>
+
+					<ol className="divide-y divide-line">
+						{AGENT_ROSTER.map((agent) => (
+							<li
+								key={agent.id}
+								className="flex gap-4 px-6 py-5 transition-colors duration-200 hover:bg-surface-hover sm:px-8"
+							>
+								<span
+									aria-hidden="true"
+									className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-control border border-line font-mono text-[0.6875rem] text-ink-subtle tabular-nums"
+								>
+									{agent.stage}
 								</span>
-								<span className="col-start-2 text-ink-muted text-sm sm:col-start-auto">
-									{row.detail}
-								</span>
+								<div className="min-w-0">
+									<div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+										<h3 className="font-display font-medium text-ink text-sm">{agent.name}</h3>
+										<span className="status-pill">{agent.status}</span>
+									</div>
+									<p className="mt-2 text-ink-muted text-sm leading-[1.6]">{agent.detail}</p>
+								</div>
+							</li>
+						))}
+					</ol>
+
+					{/* Three standing commitments rather than three more features. These
+					    are the questions a founder asks before handing over their raise,
+					    and they belong on the roster panel because they scope what the
+					    agents are allowed to do. */}
+					<ul className="grid divide-line border-line border-t sm:grid-cols-3 sm:divide-x">
+						{COMMITMENTS.map((commitment) => (
+							<li key={commitment} className="px-6 py-5 text-ink-subtle text-xs leading-[1.5]">
+								{commitment}
 							</li>
 						))}
 					</ul>
