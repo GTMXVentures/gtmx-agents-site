@@ -3,3 +3,5 @@ config:
   gtmxsite:zoneName: gtmxagents.com
   gtmxsite:workerName: gtmx-agents-site
   gtmxsite:attachWorkerDomain: "false"
+  cloudflare:apiToken:
+    secure: AAABAJBL6M4dwABfY6eh9HV5Yr24VJxpxuGVGFwHd+TJ02m+lCm+F1sjUfoLoCSJU5teJVJEaZvaic21dEIpohOOH9Ghue89JxKtG4MEjmPqa2goMQ==

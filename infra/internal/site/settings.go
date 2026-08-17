@@ -16,10 +16,11 @@ import (
 // the value is an untyped `pulumi.Input`), deleting this file is a safe
 // downgrade: re-set them by hand and note it in the README.
 //
-// One v6 sharpness worth recording: the provider's setting IDs are camelCase
-// (`alwaysUseHttps`, `minTlsVersion`), not the snake_case spelling used in
-// Cloudflare's own REST API docs (`always_use_https`, `min_tls_version`).
-// Passing the snake_case form fails at apply time with an unhelpful error.
+// One v6 sharpness worth recording: SettingId is passed VERBATIM into the API
+// URL (`PATCH /zones/{id}/settings/{setting_id}`), so it must be the snake_case
+// spelling from Cloudflare's REST docs (`always_use_https`, `min_tls_version`).
+// The camelCase form 400s with "No route for that URI" — verified at apply time
+// on 2026-08-17.
 //
 // Docs: https://developers.cloudflare.com/api/resources/zones/subresources/settings/
 func NewZoneSettings(ctx *pulumi.Context, s *Settings, zone *cloudflare.Zone) error {
@@ -28,7 +29,7 @@ func NewZoneSettings(ctx *pulumi.Context, s *Settings, zone *cloudflare.Zone) er
 	// downgrade waiting to be intercepted.
 	_, err := cloudflare.NewZoneSetting(ctx, "always-use-https", &cloudflare.ZoneSettingArgs{
 		ZoneId:    zone.ID(),
-		SettingId: pulumi.String("alwaysUseHttps"),
+		SettingId: pulumi.String("always_use_https"),
 		Value:     pulumi.String("on"),
 	}, s.opts()...)
 	if err != nil {
@@ -41,7 +42,7 @@ func NewZoneSettings(ctx *pulumi.Context, s *Settings, zone *cloudflare.Zone) er
 	// middleboxes — the audience here includes people behind exactly those.
 	_, err = cloudflare.NewZoneSetting(ctx, "min-tls-version", &cloudflare.ZoneSettingArgs{
 		ZoneId:    zone.ID(),
-		SettingId: pulumi.String("minTlsVersion"),
+		SettingId: pulumi.String("min_tls_version"),
 		Value:     pulumi.String("1.2"),
 	}, s.opts()...)
 	if err != nil {
