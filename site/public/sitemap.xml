@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  One route, one URL. Hand-maintained on purpose: a generator is not worth it
+  until routes multiply. If you add a route, add it here AND check the canonical
+  tag in index.html. Deliberately no <lastmod> — a stale hardcoded date is worse
+  than none, and Google ignores lastmod it does not trust.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+	<url>
+		<loc>https://gtmxagents.com/</loc>
+		<changefreq>weekly</changefreq>
+		<priority>1.0</priority>
+	</url>
+</urlset>

@@ -1,0 +1,6 @@
+# One deployable package today (`site`). Deliberately NO Turborepo: with a
+# single package, turbo's task graph adds a config file and a cache dir but
+# saves nothing. Add Turborepo (and a catalog: block for shared dep versions,
+# openskillmd-style) when a second package lands.
+packages:
+  - "site"

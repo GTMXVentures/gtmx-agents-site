@@ -1,0 +1,8 @@
+# Copied to dist/ by Vite, then read by wrangler: every pattern here is excluded
+# from the static-asset upload (and .assetsignore itself is never uploaded).
+#
+# Why this file exists: public/ is served verbatim at the site root, so
+# public/README.md — an internal note about the missing og.png — would otherwise
+# be live at https://gtmxagents.com/README.md. Keeping the note next to the
+# assets it documents is worth more than the one line it costs to not ship it.
+README.md

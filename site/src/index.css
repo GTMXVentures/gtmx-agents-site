@@ -1,0 +1,201 @@
+@import "tailwindcss";
+
+/* =============================================================================
+ * Tailwind v4, CSS-first configuration
+ * =============================================================================
+ * There is NO tailwind.config.js and NO postcss.config.js in this repo — the
+ * @tailwindcss/vite plugin scans source files and reads the @theme block below.
+ * Adding a JS config back would create a second, silently-ignored source of
+ * truth for tokens.
+ *
+ * Rules for @theme:
+ *  - Values must be LITERAL hex (or plain lengths). Tailwind inlines @theme
+ *    values into the generated utilities, so var() / color-mix() here produce
+ *    broken declarations. Derived tints are precomputed and noted inline.
+ *  - Every --color-* key becomes a full utility family: --color-accent gives
+ *    bg-accent, text-accent, border-accent, ring-accent, etc.
+ *
+ * Breakpoints are stock Tailwind — MOBILE-FIRST (`md:` = "≥768px"). This is a
+ * deliberate difference from the openskillmd platform repo, which inverts them
+ * into max-width variants; that inversion is load-bearing there and a trap
+ * everywhere else. Do not copy it here.
+ *
+ * Dark-only site: there is no theme toggle and no `.dark` class. Write styles
+ * directly against these tokens.
+ * ============================================================================= */
+
+@theme {
+	/* --- Surfaces (near-black, slightly blue — reads as "product", not "print") */
+	--color-base: #0b0d12; /* page background */
+	--color-mantle: #07080d; /* deeper wells: footer, code blocks */
+	--color-surface: #141822; /* raised card */
+	--color-surface-hover: #1b2130; /* card hover / subtle fill */
+	--color-line: #262c3a; /* 1px hairline border — never pure black */
+
+	/* --- Text ramp. The body ramp is cool (blue-grey); the DISPLAY ink is warm
+	 * bone on purpose. Setting the serif headlines a few degrees warmer than the
+	 * sans copy is what makes them read as printed ink rather than as the same
+	 * text at a larger size — it is the reason the didone below carries on a
+	 * near-black page. Do not collapse --color-ink-display into --color-ink. */
+	--color-ink: #e8ecf5; /* primary copy */
+	--color-ink-display: #f5efe4; /* serif headlines ONLY — warm bone */
+	--color-ink-muted: #9aa4b8; /* secondary copy, labels */
+	--color-ink-subtle: #6b7488; /* meta, disabled, legal */
+
+	/* --- Brand accent (indigo) + one supporting signal colour set */
+	--color-accent: #5b8cff;
+	--color-accent-hover: #7ba3ff; /* accent lightened ~12% for hover */
+	--color-accent-ink: #07080d; /* text ON an accent fill (= mantle) */
+	--color-accent-soft: #17203a; /* mix(accent 14%, base) — tinted wash */
+	--color-success: #4ade80;
+	--color-warning: #fbbf24;
+	--color-danger: #f87171;
+
+	/* --- Semantic role aliases -----------------------------------------------
+	 * shadcn/ui primitives (added later; components.json is already configured)
+	 * are written against these role names — bg-background, text-foreground,
+	 * border-border, bg-muted, text-muted-foreground, ring-ring …
+	 *
+	 * Note we define --color-<role> directly with literal hex instead of using
+	 * shadcn's usual `:root { --background: … }` + `@theme inline { --color-
+	 * background: var(--background) }` two-layer indirection. That indirection
+	 * exists to support runtime theme switching, which a dark-only marketing
+	 * page does not need — and var() in @theme is exactly what the rule above
+	 * forbids. When `npx shadcn add` writes a :root block, fold its values into
+	 * this block as hex rather than keeping both. */
+	--color-background: #0b0d12; /* = base */
+	--color-foreground: #e8ecf5; /* = ink */
+	--color-card: #141822; /* = surface */
+	--color-card-foreground: #e8ecf5;
+	--color-popover: #141822;
+	--color-popover-foreground: #e8ecf5;
+	--color-primary: #5b8cff; /* = accent */
+	--color-primary-foreground: #07080d; /* = accent-ink */
+	--color-secondary: #141822;
+	--color-secondary-foreground: #e8ecf5;
+	--color-muted: #141822;
+	--color-muted-foreground: #9aa4b8; /* = ink-muted */
+	--color-accent-foreground: #e8ecf5;
+	--color-destructive: #f87171; /* = danger */
+	--color-destructive-foreground: #07080d;
+	--color-border: #262c3a; /* = line */
+	--color-input: #262c3a;
+	--color-ring: #5b8cff; /* = accent */
+
+	/* --- Type ------------------------------------------------------------------
+	 * Body and mono stay SYSTEM stacks: zero webfont bytes on the critical path
+	 * for the text that makes up 95% of the page.
+	 *
+	 * Exactly ONE webfont is loaded — Bodoni Moda, for display only. The
+	 * reference is deliberate: investment-banking tombstone notices and offering
+	 * documents are set in didones, and this is a product sold to founders and
+	 * bankers. It is the page's one aesthetic risk, so it is fenced in:
+	 *   - display sizes only (≥1.125rem). A didone's hairlines vanish on a dark
+	 *     background at body sizes — never set copy in --font-display.
+	 *   - weight 400–600 only. Below 400 the thins break up on dark.
+	 * The <link> in index.html uses display=swap, so the system fallback below
+	 * paints the LCP headline immediately and Bodoni swaps in; the fallback list
+	 * is didone-adjacent so the reflow is small. */
+	--font-sans:
+		ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	--font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+	--font-display:
+		"Bodoni Moda", "Bodoni MT", Didot, "Didot LT STD", "Hoefler Text", Garamond, "Times New Roman",
+		serif;
+
+	/* --- Radius. Two steps only. The card radius groups panels; the control
+	 * radius is tighter so buttons and inputs sit closer to the hairline/print
+	 * discipline of the page instead of reading as pills. */
+	--radius-card: 14px;
+	--radius-control: 6px;
+
+	/* --- Motion. One keyframe, used only for the hero's load sequence (stagger
+	 * is set inline per element). Nothing below the fold animates: scroll-linked
+	 * reveals would need an IntersectionObserver for an effect that has already
+	 * finished by the time it is scrolled into view. */
+	--animate-rise: rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes rise {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@layer base {
+	:root {
+		/* Makes native scrollbars, form controls and <select> popups render dark —
+		 * without this they appear as light-mode widgets on a dark page. */
+		color-scheme: dark;
+	}
+
+	html {
+		/* The only in-page navigation is the "Join the waitlist" anchor → #waitlist.
+		 * Overridden in the reduced-motion block below. */
+		scroll-behavior: smooth;
+	}
+
+	body {
+		@apply bg-background text-foreground font-sans antialiased;
+	}
+
+	/* Anchor/keyboard focus must stay visible on a dark background. */
+	:focus-visible {
+		@apply outline-2 outline-offset-2 outline-accent;
+	}
+
+	/* Bodoni Moda ships an optical-size axis (6–96). `auto` is the browser default
+	 * but is stated explicitly here because a stray `font-optical-sizing: none`
+	 * from a reset would flatten the headlines back to text-size shapes — which is
+	 * most of what makes the display face worth loading at all. */
+	.font-display {
+		font-optical-sizing: auto;
+	}
+
+	/* Honours the OS "reduce motion" setting for everything at once, including
+	 * the hero's load sequence.
+	 *
+	 * !important is load-bearing here and is the one place in this file it is
+	 * allowed: the hero's stagger is set as an INLINE `animationDelay` style (see
+	 * the comment in Hero.tsx explaining why it cannot be a utility class), and a
+	 * normal author declaration cannot beat an inline style. An !important author
+	 * declaration can. Removing these keywords silently un-does the accessibility
+	 * opt-out for exactly the elements that animate.
+	 *
+	 * 0.01ms rather than 0s: a zero-duration animation never fires `animationend`
+	 * in some engines, which strands any listener waiting on it. Nothing listens
+	 * today — this keeps it true if something does later.
+	 *
+	 * biome-ignore-start lint/complexity/noImportantStyles: see above — must beat inline styles.
+	 */
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		*::before,
+		*::after {
+			animation-duration: 0.01ms !important;
+			animation-delay: 0ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+		}
+		/* biome-ignore-end lint/complexity/noImportantStyles: end of the reduced-motion block. */
+
+		html {
+			scroll-behavior: auto;
+		}
+	}
+}
+
+@layer components {
+	/* The page's one repeated typographic device: a small monospace, wide-tracked
+	 * label. It marks structure (section eyebrows, ledger headers, form labels)
+	 * without ever competing with the display serif. Defined once here rather
+	 * than as a five-utility string repeated in eight places. */
+	.eyebrow {
+		@apply font-mono text-[0.6875rem] text-ink-subtle uppercase tracking-[0.18em];
+	}
+}

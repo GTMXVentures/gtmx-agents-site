@@ -1,0 +1,390 @@
+name: PR Check
+
+# =============================================================================
+# PR Check — the single quality gate for this repo.
+#
+# WHAT IT DOES
+#   site    : install → lint (Biome) → typecheck (tsc) → test (vitest) → build
+#             (vite), then uploads site/dist as an artifact so a reviewer can
+#             download the exact bundle a PR produces.
+#   infra   : go vet + go build over the Pulumi Go program in infra/.
+#   preview : uploads a *preview version* of the Worker to Cloudflare (never
+#             production) and sticky-comments the URL on the PR.
+#
+# WHY THERE IS DELIBERATELY NO `push:` TRIGGER
+#   deploy.yml calls THIS file as a reusable workflow (`workflow_call`) on push
+#   to main. If we also had `on: push: branches: [main]` here, every merge would
+#   run the whole matrix twice — once standalone, once inside the deploy run —
+#   burning double the minutes and, worse, producing two independent verdicts
+#   for one commit. Instead:
+#       PR commits  → pull_request runs this workflow (branch protection gates
+#                     the merge on the `site` / `infra` job names).
+#       main commit → deploy.yml runs it exactly once as its `ci` job, and the
+#                     `deploy` job hangs off `needs: ci`.
+#   Net effect: CI runs exactly once per commit, and a deploy can only happen
+#   downstream of a green CI leg in the *same* workflow run.
+#
+# ALL JOBS ARE BLOCKING
+#   No `continue-on-error:` anywhere. This is a greenfield repo — the baseline
+#   is clean on day one, so there is no legacy-violation backlog to warn-only
+#   around. Adding a warn-only lane later means the gate silently stopped
+#   gating; if a check is worth running it is worth failing on.
+#
+# REQUIRED REPO CONFIGURATION
+#   secrets.CLOUDFLARE_API_TOKEN
+#       Cloudflare API token "B" (`gha-deploy`), scoped to:
+#         Account → Workers Scripts : Edit    (upload/deploy the script + assets)
+#         Account → Workers Routes  : Edit    (bind routes for the worker)
+#         Account → Account Settings: Read    (wrangler resolves the account)
+#       Explicitly NO Zone→DNS:Edit. DNS for gtmxagents.com carries the MX / SPF
+#       / DMARC records for Google Workspace mail; a CI token that could rewrite
+#       DNS would let anyone who leaks a workflow log repoint company email.
+#       DNS is owned by Pulumi with a separate, human-held token "A"
+#       (`pulumi-gtmxagents`) that is never placed in GitHub. See ADR 0002.
+#   secrets.CLOUDFLARE_ACCOUNT_ID
+#       Cloudflare account ID. Not really secret, but wrangler-action takes it
+#       alongside the token and keeping them together avoids a split source of
+#       truth.
+#   vars.CF_WORKERS_SUBDOMAIN
+#       Repo *variable* (not secret) — the account's workers.dev subdomain, e.g.
+#       `gtmx`. Used only to render the preview URL in the PR comment.
+#
+#   One more dependency, owned by the root package.json rather than this file:
+#   the `"packageManager": "pnpm@10.32.1"` field. pnpm/action-setup@v4 reads it
+#   and installs exactly that pnpm. We deliberately do NOT pass a `version:`
+#   input — specifying both makes the action fail with "Multiple versions of
+#   pnpm specified", and one source of truth for the toolchain beats two that
+#   can drift. If that field is ever removed, every workflow here breaks at the
+#   "Setup pnpm" step.
+# =============================================================================
+
+on:
+  pull_request:
+    branches: [main]
+    # A PR that only touches prose cannot change the build, the tests, or the
+    # Pulumi plan, so the whole pipeline is skipped for it.
+    #
+    # CAVEAT worth knowing before adding these job names to branch protection:
+    # a skipped-by-paths-ignore workflow reports NOTHING, not "success". If
+    # `site` / `infra` are marked as *required* status checks, a docs-only PR
+    # will sit forever waiting for checks that will never report. Either keep
+    # these out of the required list, or convert this to a required-check job
+    # with a `paths-filter` + skip-job pattern. Documented here because the
+    # failure mode ("my README PR is stuck") is otherwise baffling.
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.claude/**'
+  # Manual re-run from the Actions tab — useful when a flaky Cloudflare upload
+  # needs a retry without pushing an empty commit.
+  workflow_dispatch:
+  # Makes this file callable from deploy.yml. No `inputs:`/`secrets:` block is
+  # declared because the caller uses `secrets: inherit`, which forwards the
+  # whole secret set without us having to enumerate (and keep in sync) names.
+  workflow_call:
+
+# -----------------------------------------------------------------------------
+# CONCURRENCY — this one is subtle, so the reasoning is written out.
+#
+# The obvious group, `pr-check-${{ github.head_ref }}` with cancel-in-progress
+# true, is WRONG here because this workflow is also reusable. Inside a
+# `workflow_call` the context is the CALLER's: on a push to main,
+# `github.head_ref` is the empty string. Every main push would therefore land in
+# the single shared group "pr-check-" and, with cancel-in-progress true, push N+1
+# would CANCEL the CI leg of push N's in-flight production deploy — killing a
+# half-finished deploy, which is exactly what deploy.yml's own
+# `cancel-in-progress: false` exists to prevent.
+#
+# So the group is keyed on the event and falls back from head_ref to ref:
+#   pull_request  → pr-check-pull_request-<branch>      (one slot per PR)
+#   push (via     → pr-check-push-refs/heads/main       (one slot for main)
+#     deploy.yml)
+#   dispatch      → pr-check-workflow_dispatch-refs/...
+# ...and cancellation is enabled ONLY for pull_request. Superseding a PR's
+# in-flight run when a new commit arrives is free; superseding a run that a
+# production deploy is waiting on is a self-inflicted outage. Main-branch runs
+# queue instead of cancelling.
+# -----------------------------------------------------------------------------
+concurrency:
+  group: pr-check-${{ github.event_name }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# Least privilege by default; the preview job widens this for itself only.
+permissions:
+  contents: read
+
+jobs:
+  # ===========================================================================
+  # site — the web bundle: lint, types, tests, build.
+  # ===========================================================================
+  site:
+    name: Site (lint · typecheck · test · build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        # Version intentionally omitted — see the header. The action reads
+        # `packageManager` from the root package.json.
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node 22 (with pnpm store cache)
+        # Must run AFTER pnpm/action-setup: `cache: pnpm` asks setup-node to run
+        # `pnpm store path`, which needs pnpm already on PATH. Swapping these two
+        # steps produces a confusing "Unable to locate executable file: pnpm".
+        # Node 22 matches .nvmrc and Cloudflare Workers' Node compat baseline.
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        # --frozen-lockfile makes CI fail (rather than silently resolve new
+        # versions) if pnpm-lock.yaml is out of date w.r.t. package.json. That
+        # is the whole point of a lockfile in CI.
+        run: pnpm install --frozen-lockfile
+
+      # -----------------------------------------------------------------------
+      # Script invocation form: `pnpm -C site run <script>` for package tasks.
+      #
+      # `-C site` selects the workspace by DIRECTORY, which the repo layout
+      # fixes (`pnpm-workspace.yaml` → packages: [site]). The alternative,
+      # `--filter <pkg-name>`, depends on the *name* field in site/package.json;
+      # a rename there would silently turn every step below into "no projects
+      # matched the filter", which pnpm exits 0 on — a gate that stops gating
+      # without anyone noticing. Directory is the more stable key.
+      #
+      # Lint is the deliberate exception: it runs at the ROOT, not in site/.
+      # -----------------------------------------------------------------------
+      - name: Lint (Biome CI mode — format + lint, repo-wide)
+        # Root script `ci:lint` = `biome ci .`. Run from the root on purpose:
+        # biome.json is a single root-level config covering the whole workspace,
+        # so `pnpm -C site run lint` would leave every file outside site/ —
+        # root configs, future packages, scripts — silently unlinted.
+        #
+        # `biome ci` rather than `biome check`: same checks, but CI mode never
+        # writes fixes and emits CI-friendly diagnostics. `check` is the local
+        # ergonomic entry point (`pnpm lint` / `pnpm lint:fix`); `ci` is the gate.
+        run: pnpm run ci:lint
+
+      - name: Typecheck (tsc --noEmit, app + worker projects)
+        # Separate from build on purpose: Vite/esbuild only *erase* types, they
+        # never check them, so a green `vite build` says nothing about type
+        # correctness. This step is the actual type gate.
+        #
+        # The site script runs BOTH tsconfigs (browser app and Worker) — they
+        # can't share one because DOM lib and workers-types have conflicting
+        # globals. Keep it that way; dropping to a single -p silently stops
+        # typechecking worker/index.ts.
+        run: pnpm -C site run typecheck
+
+      - name: Test (vitest)
+        run: pnpm -C site run test
+
+      - name: Build (vite)
+        run: pnpm -C site run build
+
+      - name: Upload site/dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-dist
+          path: site/dist
+          # 3 days is enough to eyeball a PR's bundle; artifacts are storage
+          # billed, and this one is regenerated by any re-run.
+          retention-days: 3
+          # A silently-empty artifact would mean the build produced nothing and
+          # we'd only find out at deploy time. Fail loudly here instead.
+          if-no-files-found: error
+
+  # ===========================================================================
+  # infra — Pulumi program written in Go. Compile-checked, not run.
+  #
+  # `pulumi preview` is deliberately NOT run in CI: previewing needs the
+  # Cloudflare API token "A" (Zone:Edit / DNS:Edit), and putting that token in
+  # GitHub would defeat the whole point of the two-token split described in the
+  # header. `go vet` + `go build` catch the failure mode that actually bites —
+  # a Pulumi program that doesn't compile — without any credentials at all.
+  # Infra changes are applied by a human running `pulumi up` locally.
+  # ===========================================================================
+  infra:
+    name: Infra (go vet · go build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          # Read the version from infra/go.mod rather than pinning it here, so
+          # bumping the toolchain is a one-line change in the module and CI
+          # follows automatically.
+          go-version-file: infra/go.mod
+          # setup-go caches the module + build cache; point it at the lockfile
+          # inside infra/ since there is no go.sum at the repo root.
+          cache-dependency-path: infra/go.sum
+
+      - name: go vet
+        working-directory: infra
+        run: go vet ./...
+
+      - name: go build
+        working-directory: infra
+        # Discards the binary — we only care that the program compiles.
+        run: go build ./...
+
+  # ===========================================================================
+  # preview — upload a Worker *version* (not a deploy) and comment its URL.
+  #
+  # `wrangler versions upload` creates a new version with 0% production traffic
+  # and, because `preview_urls: true` is set in wrangler.jsonc, gives it its own
+  # hostname. Production keeps serving whatever version is currently deployed.
+  # Zero production impact by construction — this is not a "deploy to staging".
+  # ===========================================================================
+  preview:
+    name: Cloudflare preview
+    needs: site
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # ---------------------------------------------------------------------
+    # SECURITY GATE. Two conditions, both load-bearing:
+    #
+    #  1. event_name == 'pull_request' — skips this job when deploy.yml calls
+    #     the workflow on a push to main. Main doesn't need a preview; it needs
+    #     the real deploy, which deploy.yml does.
+    #
+    #  2. head repo == this repo — a PR from a FORK must not get secrets. On
+    #     `pull_request`, GitHub already withholds secrets from fork PRs, so
+    #     without this guard the job wouldn't leak anything, it would just fail
+    #     confusingly with an empty API token. The guard turns that into a clean
+    #     skip.
+    #
+    # And the thing we are NOT doing: `pull_request_target`. That trigger runs
+    # in the base-repo context WITH secrets while checking out attacker-authored
+    # code — one malicious `pnpm build` postinstall away from exfiltrating the
+    # Cloudflare token. Fork contributors get no preview URL; a maintainer can
+    # push the branch to this repo if a preview is genuinely needed.
+    # ---------------------------------------------------------------------
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+      pull-requests: write   # required to create/edit the sticky preview comment
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node 22 (with pnpm store cache)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        # Needed even though we reuse the built dist: wrangler is a workspace
+        # devDependency and it bundles worker/index.ts (TypeScript) itself at
+        # upload time.
+        run: pnpm install --frozen-lockfile
+
+      - name: Download site/dist from the site job
+        # Reuses the exact bundle the `site` job tested, rather than rebuilding
+        # and hoping the two are identical.
+        uses: actions/download-artifact@v4
+        with:
+          name: site-dist
+          path: site/dist
+
+      - name: Upload preview version to Cloudflare
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: site
+          packageManager: pnpm
+          # `versions upload` (not `deploy`) — creates a version serving 0% of
+          # production traffic. `--preview-alias` gives it a stable, human-named
+          # hostname keyed to the PR number, so pushing new commits to the PR
+          # re-points the SAME URL instead of minting a new one each time.
+          # Alias must be DNS-label-safe: `pr-<number>` always is.
+          command: versions upload --preview-alias pr-${{ github.event.pull_request.number }}
+
+      - name: Comment preview URL on the PR
+        uses: actions/github-script@v7
+        env:
+          # -------------------------------------------------------------
+          # The URL is CONSTRUCTED, not parsed out of wrangler's stdout.
+          #
+          # Preview-alias hostnames are deterministic:
+          #     https://<alias>-<worker-name>.<account-subdomain>.workers.dev
+          # so with alias `pr-42`, worker `gtmx-agents-site` and subdomain
+          # `${{ vars.CF_WORKERS_SUBDOMAIN }}` we can build it locally with zero
+          # coupling to wrangler's output format. Scraping the URL out of the
+          # command log instead (regex over "Version Preview URL: ...") is what
+          # most examples do, and it breaks silently every time wrangler changes
+          # its human-readable output — a category of breakage that only shows
+          # up as a missing comment on a PR, which nobody notices for weeks.
+          #
+          # If CF_WORKERS_SUBDOMAIN is unset, GitHub renders it as the empty
+          # string and the URL would be malformed, so we check for that and say
+          # so in the comment rather than posting a dead link.
+          # -------------------------------------------------------------
+          CF_WORKERS_SUBDOMAIN: ${{ vars.CF_WORKERS_SUBDOMAIN }}
+          WORKER_NAME: gtmx-agents-site
+        with:
+          script: |
+            const marker = '<!-- cf-preview -->';
+            const prNumber = context.payload.pull_request.number;
+            const subdomain = process.env.CF_WORKERS_SUBDOMAIN;
+            const worker = process.env.WORKER_NAME;
+
+            const body = subdomain
+              ? [
+                  marker,
+                  '### ☁️ Cloudflare preview',
+                  '',
+                  `**<https://pr-${prNumber}-${worker}.${subdomain}.workers.dev>**`,
+                  '',
+                  `Built from \`${context.sha.slice(0, 7)}\`. This is a Worker *version* at 0% production traffic — production is untouched.`,
+                ].join('\n')
+              : [
+                  marker,
+                  '### ☁️ Cloudflare preview',
+                  '',
+                  'The version uploaded, but the repo variable `CF_WORKERS_SUBDOMAIN` is not set, so the preview URL cannot be rendered. Set it under Settings → Secrets and variables → Actions → Variables.',
+                ].join('\n');
+
+            // Sticky comment: find our previous one by the HTML marker and
+            // update it in place. Otherwise a 12-commit PR ends up with 12
+            // near-identical bot comments and reviewers stop reading them.
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+            const existing = comments.find(
+              (c) => c.user.type === 'Bot' && c.body && c.body.includes(marker),
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body,
+              });
+            }

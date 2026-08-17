@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="GTMX Agents">
+  <!-- Placeholder mark: accent-on-dark "G" in the brand indigo (#5b8cff over
+       #0b0d12 — same literals as the @theme tokens in src/index.css). Rounded
+       square rather than a bare glyph so it reads at 16px in a tab strip.
+       Replace when real brand assets land; keep the filename so index.html and
+       the JSON-LD logo URL stay valid. -->
+  <rect width="64" height="64" rx="14" fill="#0b0d12" />
+  <text
+    x="32"
+    y="33"
+    fill="#5b8cff"
+    font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+    font-size="40"
+    font-weight="600"
+    text-anchor="middle"
+    dominant-baseline="central"
+  >G</text>
+</svg>

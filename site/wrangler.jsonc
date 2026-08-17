@@ -1,0 +1,54 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+
+	// Worker name = the service name in Cloudflare. Pulumi's WorkersCustomDomain
+	// resources reference this exact string (gtmxsite:workerName), so renaming it
+	// here means renaming it in the Pulumi stack config too — and the script must
+	// exist before a custom domain can attach to it.
+	"name": "gtmx-agents-site",
+
+	// wrangler bundles TypeScript natively — no separate build step for the Worker.
+	// `pnpm build` only produces the static assets in ./dist.
+	"main": "worker/index.ts",
+
+	// Pins the workerd runtime behaviour to the semantics that existed on this
+	// date. Bumping it opts into newer (possibly breaking) runtime defaults, so it
+	// is a deliberate, reviewed change — not something to refresh casually.
+	"compatibility_date": "2026-08-17",
+
+	// workers.dev URL stays on: it is how we smoke-test a deploy before DNS is
+	// attached, and it is the host for PR preview aliases.
+	"workers_dev": true,
+	// Per-version preview URLs — required for `wrangler versions upload
+	// --preview-alias pr-<n>` in CI to hand back a reviewable URL with zero
+	// production impact.
+	"preview_urls": true,
+
+	// Logs + traces in the Cloudflare dashboard. Free and the only way to debug a
+	// production 500 in a Worker after the fact.
+	"observability": {
+		"enabled": true
+	},
+
+	"assets": {
+		// Must match vite.config.ts `build.outDir`.
+		"directory": "./dist",
+		// Binding name used in worker/index.ts as `env.ASSETS`.
+		"binding": "ASSETS",
+		// Deep links (/pricing, /nope/deep) return index.html with a 200 instead of
+		// a 404, which is what an SPA needs. Without this, everything but / 404s.
+		"not_found_handling": "single-page-application",
+		// MUST stay an ARRAY of path globs. `true` sends EVERY request — including
+		// hashed assets — through the Worker, which meters requests that would
+		// otherwise be free/unmetered. If a wrangler version rejects the array
+		// form, upgrade wrangler; never "fix" this by setting true.
+		//
+		// Consequence to know about: anything NOT matched here never reaches
+		// worker/index.ts. That includes every document request, which is why the
+		// www→apex 301 in the Worker currently only fires for /api/* — see the
+		// KNOWN GAP comment in worker/index.ts. If that redirect must work, the
+		// fix is negative patterns (["/*", "!/assets/*"]), which keeps hashed
+		// assets unmetered while letting documents through — NOT `true`.
+		"run_worker_first": ["/api/*"]
+	}
+}

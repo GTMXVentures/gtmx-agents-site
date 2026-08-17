@@ -1,0 +1,68 @@
+{
+	// Biome is the ONLY linter/formatter in this repo — no ESLint, no Prettier.
+	// One root config covers the whole workspace; `biome check .` from the root or
+	// from site/ resolves this same file (Biome walks up from the cwd).
+	//
+	// Keep $schema pinned to the installed @biomejs/biome version, otherwise the
+	// CLI warns on every run. `pnpm exec biome migrate --write` updates both.
+	"$schema": "https://biomejs.dev/schemas/2.5.8/schema.json",
+	"vcs": { "enabled": false, "clientKind": "git", "useIgnoreFile": true },
+	"files": {
+		// Non-code files (svg, xml, txt, lockfiles) are skipped instead of erroring.
+		"ignoreUnknown": true,
+		"includes": [
+			"**",
+			"!**/node_modules",
+			"!**/dist",
+			"!**/.wrangler",
+			"!**/coverage",
+			"!**/pnpm-lock.yaml",
+			"!.claude",
+			// shadcn/ui primitives are generated upstream code. Formatting or linting
+			// them creates noise on every `shadcn add` and diffs nobody can review —
+			// the openskillmd platform repo excludes them for the same reason.
+			"!site/src/components/ui"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"useEditorconfig": true,
+		"formatWithErrors": false,
+		// Tabs: one indent character, reader-configurable width, smaller diffs.
+		"indentStyle": "tab",
+		// 100 columns — wide enough for JSX plus Tailwind class lists without turning
+		// every attribute into its own line.
+		"lineWidth": 100,
+		// Normalises line endings so a Windows checkout cannot produce a
+		// whitespace-only diff.
+		"lineEnding": "lf"
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double",
+			// Trailing commas everywhere: adding an argument/property touches one line.
+			"trailingCommas": "all",
+			"semicolons": "always"
+		}
+	},
+	// This repo's JSON is really JSONC — tsconfig*.json, components.json and
+	// wrangler.jsonc all carry why-comments, which is house style.
+	"json": { "parser": { "allowComments": true, "allowTrailingCommas": true } },
+	"css": {
+		"parser": {
+			// Tailwind v4 config is CSS-first in site/src/index.css: @import
+			// "tailwindcss", @theme, @layer, @apply. Without this flag Biome rejects
+			// @apply ("Tailwind-specific syntax is disabled") and refuses to format
+			// the file at all.
+			"tailwindDirectives": true
+		}
+	},
+	"linter": {
+		"enabled": true,
+		// "recommended" explicitly — NOT what `biome migrate` produces. Migrating the
+		// old `{"recommended": true}` field rewrites it to `preset: "none"`, which
+		// silently disables every rule. If a future migrate does that again, put this
+		// back and re-verify with a deliberate lint error.
+		"rules": { "preset": "recommended" }
+	}
+}

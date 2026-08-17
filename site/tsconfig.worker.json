@@ -1,0 +1,19 @@
+{
+	// Worker project — separate from tsconfig.json on purpose.
+	//
+	// @cloudflare/workers-types redeclares web globals (Request/Response/fetch/…)
+	// with the workerd signatures. Loading it in the same project as lib "DOM"
+	// produces dozens of "Subsequent property declarations must have the same
+	// type" errors, and dropping DOM from the app project would break React.
+	// Two projects, two global environments, one `pnpm typecheck` that runs both.
+	"extends": "../tsconfig.base.json",
+	"include": ["worker/**/*"],
+	"compilerOptions": {
+		"noEmit": true,
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"lib": ["ES2022"],
+		// No "DOM" here — workers-types supplies the runtime's own globals.
+		"types": ["@cloudflare/workers-types"]
+	}
+}

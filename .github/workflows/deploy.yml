@@ -1,0 +1,194 @@
+name: Deploy — Cloudflare Workers (production)
+
+# =============================================================================
+# Production deploy for gtmxagents.com.
+#
+# THE GATING RATIONALE (the reason this file exists at all)
+#   We want one rule: *nothing reaches production that hasn't passed CI.* There
+#   are three ways to get that, and only one of them actually holds.
+#
+#   1. Cloudflare Workers Builds (Cloudflare's own git integration).
+#      Rejected. Workers Builds watches the git ref and builds on push; it has
+#      no visibility into the GitHub check suite, so it will happily ship a
+#      commit whose tests are red. It also duplicates the toolchain (its build
+#      image vs. our pinned pnpm/Node), which is a second place for "works in CI,
+#      breaks in prod" to hide. See ADR 0001.
+#
+#   2. A deploy workflow with `workflow_run:` waiting on PR Check.
+#      Rejected. `workflow_run` fires on *completion* of the other workflow and
+#      you then have to inspect its conclusion yourself, remember that it runs
+#      against the default branch's workflow definition, and handle the case
+#      where the two runs raced. It is a footgun with a long incident history.
+#
+#   3. Call PR Check as a reusable workflow and hang the deploy off it.  ← chosen
+#      `ci: uses: ./.github/workflows/pr-check.yml` runs the *entire* PR Check
+#      matrix as jobs inside THIS run, and `deploy: needs: ci` means the deploy
+#      job cannot start unless every one of those jobs succeeded. The dependency
+#      is enforced by the Actions scheduler, not by our own status-parsing code.
+#      One run, one verdict, no race. This is also why pr-check.yml has no
+#      `push:` trigger — see the long comment at the top of that file.
+#
+#   Consequence worth stating explicitly: a red test on main blocks the deploy
+#   and leaves production serving the previous version. That is the correct
+#   failure mode.
+#
+# REQUIRED REPO CONFIGURATION  (same set as pr-check.yml — repeated here so this
+# file is readable standalone)
+#   secrets.CLOUDFLARE_API_TOKEN
+#       Cloudflare API token "B" (`gha-deploy`):
+#         Account → Workers Scripts : Edit
+#         Account → Workers Routes  : Edit
+#         Account → Account Settings: Read
+#       Deliberately has NO DNS write permission. gtmxagents.com's DNS holds the
+#       Google Workspace MX / SPF / DMARC records; a CI token able to edit DNS
+#       could repoint company mail. DNS is Pulumi's, applied by a human with a
+#       separate token "A" that never enters GitHub. (ADR 0002: Pulumi owns
+#       "where traffic goes", wrangler owns "what runs".)
+#   secrets.CLOUDFLARE_ACCOUNT_ID
+#       Cloudflare account ID, passed to wrangler-action alongside the token.
+#   vars.CF_WORKERS_SUBDOMAIN
+#       Repo variable holding the account's workers.dev subdomain. Consumed by
+#       pr-check.yml's preview comment; declared here for completeness because
+#       `secrets: inherit` forwards the whole set to the called workflow.
+#
+#   Plus `"packageManager": "pnpm@10.32.1"` in the root package.json —
+#   pnpm/action-setup@v4 reads it instead of a hardcoded `version:` input.
+# =============================================================================
+
+on:
+  push:
+    branches: [main]
+  # Manual trigger for redeploying the current main without an empty commit
+  # (e.g. after rotating the Cloudflare token, or re-running a deploy that
+  # failed on a transient Cloudflare 5xx).
+  workflow_dispatch:
+
+# -----------------------------------------------------------------------------
+# CONCURRENCY — cancel-in-progress is FALSE, on purpose.
+#
+# Everywhere else in this repo we cancel superseded runs to save minutes. Not
+# here. `wrangler deploy` uploads the script and its static assets and then
+# flips traffic; cancelling mid-flight can leave the account in a state where
+# the new version is partially uploaded and the old one has already been
+# superseded. Two rapid merges therefore QUEUE: the second deploy waits for the
+# first to finish, then ships. Slightly slower, never torn.
+#
+# A single flat group name (no ref interpolation) is right because there is
+# exactly one production environment — every deploy competes for the same
+# resource regardless of which event started it.
+# -----------------------------------------------------------------------------
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  # ===========================================================================
+  # ci — the whole of pr-check.yml, run as jobs inside this run.
+  # ===========================================================================
+  ci:
+    name: CI
+    uses: ./.github/workflows/pr-check.yml
+    # `inherit` forwards every secret to the called workflow rather than making
+    # us enumerate them here and keep two lists in sync. The called workflow is
+    # in THIS repo (a local `./` path), so there is no trust boundary being
+    # crossed — inherit is safe here in a way it would not be for a third-party
+    # reusable workflow.
+    secrets: inherit
+    # A called workflow cannot ESCALATE beyond what the calling job grants, and
+    # the caller's default here is `contents: read`. pr-check.yml's `preview`
+    # job declares `pull-requests: write`; that job is skipped on a push (its
+    # `if` requires event_name == 'pull_request'), but we grant the permission
+    # anyway so the call is never rejected for requesting more than it was
+    # given.
+    permissions:
+      contents: read
+      pull-requests: write
+
+  # ===========================================================================
+  # deploy — ship to production. Cannot start unless every ci job is green.
+  # ===========================================================================
+  deploy:
+    name: Deploy to production
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # GitHub Environment: gives the run a "production" badge, a deployment
+    # record with the live URL on the repo home page, and a place to attach
+    # required reviewers / wait timers later without touching this file.
+    environment:
+      name: production
+      url: https://gtmxagents.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node 22 (with pnpm store cache)
+        # Order matters — see the same step in pr-check.yml.
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        # Required regardless of how we obtain dist/: wrangler is a workspace
+        # devDependency, and it is wrangler (not vite) that bundles the
+        # TypeScript in site/worker/index.ts at upload time.
+        run: pnpm install --frozen-lockfile
+
+      # -----------------------------------------------------------------------
+      # REBUILD vs. REUSE THE `site-dist` ARTIFACT
+      #
+      # Reusing it would work. Jobs from a `workflow_call` execute inside the
+      # SAME workflow run as the caller, so `site-dist` uploaded by the `site`
+      # job is visible to `actions/download-artifact@v4` here with no run-id
+      # plumbing. That is a real, supported behaviour — not the reason we skip
+      # it.
+      #
+      # We rebuild because it is simply the better trade at this size:
+      #   · We already pay for `pnpm install` above (wrangler needs it), so the
+      #     only saving would be the ~20s of `vite build` on a small static
+      #     site. Downloading and unpacking an artifact is not free either.
+      #   · The build is deterministic from the checked-out SHA, and this job
+      #     checks out the same SHA `ci` validated. Rebuilding cannot produce a
+      #     different bundle than the one that was tested; it can only produce
+      #     the same one.
+      #   · It removes a cross-workflow coupling — the artifact NAME becomes a
+      #     silent contract between two files. Rename it in pr-check.yml and
+      #     this job fails at deploy time, on main, in front of production. A
+      #     self-contained build has no such tripwire.
+      # Revisit if the build ever grows past a couple of minutes.
+      # -----------------------------------------------------------------------
+      - name: Build (vite)
+        # `-C site` selects the workspace by directory — same rationale as
+        # pr-check.yml: the directory is fixed by pnpm-workspace.yaml, the
+        # package `name` field is not.
+        run: pnpm -C site run build
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: site
+          packageManager: pnpm
+          # Plain `deploy` — uploads a new version AND routes 100% of traffic to
+          # it. (PR previews use `versions upload`, which uploads without
+          # routing. Same account, entirely different blast radius.)
+          #
+          # Everything about WHAT gets deployed — worker name, the ./dist assets
+          # binding, run_worker_first, preview_urls — lives in site/wrangler.jsonc,
+          # not in flags here, so a local `pnpm wrangler deploy` and this CI
+          # deploy are the same operation.
+          #
+          # Note: the apex/www custom domains are attached by Pulumi
+          # (WorkersCustomDomain), not by this command. On a brand-new repo this
+          # step will succeed and publish to the workers.dev hostname before the
+          # custom domains exist — that is the expected intermediate state
+          # during initial setup, not a failure.
+          command: deploy

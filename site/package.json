@@ -1,0 +1,52 @@
+{
+	"name": "gtmx-agents-site",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"//typecheck": "Two projects: the browser app (DOM + vite/client types) and the Worker (workers-types). They cannot share one tsconfig — `Fetcher`/`ExportedHandler` don't exist in DOM lib, and the Worker's globals conflict with DOM ones.",
+		"typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.worker.json",
+		"//lint": "biome.jsonc lives at the repo root and covers the whole workspace; biome discovers it by walking up from the cwd, so plain `biome check .` here lints exactly this package with the shared config.",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"//cf:dev": "wrangler dev serves the REAL Worker (redirects, /api/* seam, run_worker_first) against ./dist. `pnpm dev` is the fast Vite HMR loop but knows nothing about the Worker — use cf:dev to verify Worker behaviour, and build first so ./dist exists.",
+		"cf:dev": "pnpm build && wrangler dev",
+		"cf:deploy": "pnpm build && wrangler deploy",
+		"cf:versions": "wrangler versions list"
+	},
+	"//dependency-notes": {
+		"@cloudflare/workers-types": "Major must track the peer wrangler declares (wrangler 4.x -> workers-types 5.x); a mismatched major types the Worker against a different runtime API surface.",
+		"@testing-library/jest-dom": "v7, not v6 — 6.10.0 shipped breaking changes in a minor and is deprecated upstream. v7 needs Node >=22, which .nvmrc pins.",
+		"vitest": "v4, not the v2 the plan named: vitest 2 depends on vite 5 internally, and because vitest.config.ts IS typechecked here, tsc reports the vite-5-vs-vite-7 `Plugin`/`UserConfig` type collision as ~40 errors. vitest 4 is the line whose peer range is vite ^6||^7||^8. Do not downgrade Vite to satisfy vitest.",
+		"jsdom": "Only vitest uses it — never import it from src/."
+	},
+	"dependencies": {
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"lucide-react": "^0.545.0",
+		"react": "^19.2.0",
+		"react-dom": "^19.2.0",
+		"tailwind-merge": "^3.3.1"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^5.20260817.1",
+		"@tailwindcss/vite": "^4.1.14",
+		"@testing-library/jest-dom": "^7.0.1",
+		"@testing-library/react": "^16.3.2",
+		"@testing-library/user-event": "^14.6.1",
+		"@types/node": "^22.19.0",
+		"@types/react": "^19.2.0",
+		"@types/react-dom": "^19.2.0",
+		"@vitejs/plugin-react": "^5.0.4",
+		"jsdom": "^29.1.1",
+		"tailwindcss": "^4.1.14",
+		"typescript": "^5.9.3",
+		"vite": "^7.3.0",
+		"vitest": "^4.1.10",
+		"wrangler": "^4.42.0"
+	}
+}

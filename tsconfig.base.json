@@ -1,0 +1,35 @@
+{
+	// Shared strict baseline, carried over from ~/code/work/openskillmd/platform.
+	// Packages extend this and add their own module/jsx/lib settings — this file
+	// deliberately holds only the flags we never want to differ between packages.
+	"compilerOptions": {
+		// Cloudflare Workers and every browser we target support ES2022 natively,
+		// so there is no reason to down-level. Vite/esbuild does the final transform.
+		"target": "ES2022",
+
+		// The full strict family (noImplicitAny, strictNullChecks, …) — non-negotiable.
+		"strict": true,
+		// Catches the classic `case` block that silently falls through.
+		"noFallthroughCasesInSwitch": true,
+		// A function with a declared return type must return on every path.
+		"noImplicitReturns": true,
+		// macOS/Windows are case-insensitive, Linux CI is not: this makes a wrong-case
+		// import fail locally instead of only in GitHub Actions.
+		"forceConsistentCasingInFileNames": true,
+
+		// esbuild/wrangler transpile file-by-file with no cross-file type info.
+		// isolatedModules + verbatimModuleSyntax make tsc reject anything a
+		// single-file transpiler cannot handle (re-exported types without
+		// `export type`, import elision surprises, `const enum`).
+		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
+		// Rejects TS-only runtime syntax (enums, parameter properties, namespaces)
+		// that a type-stripping transpiler cannot erase.
+		"erasableSyntaxOnly": true,
+
+		// We never ship .d.ts from this repo (it is an app, not a library), and every
+		// package sets noEmit. Skipping lib checks keeps typecheck fast and stops
+		// third-party @types drift (react vs workers-types) from failing our build.
+		"skipLibCheck": true
+	}
+}

@@ -1,0 +1,3 @@
+name: gtmx-agents-site-infra
+description: Cloudflare zone, DNS and Workers custom domains for gtmxagents.com
+runtime: go

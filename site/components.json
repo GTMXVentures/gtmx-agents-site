@@ -1,0 +1,27 @@
+{
+	"$schema": "https://ui.shadcn.com/schema.json",
+	// Config only — no shadcn primitives are installed yet. This file exists so
+	// that `pnpm dlx shadcn@latest add <component>` drops files in the right
+	// place with the right style instead of prompting and guessing.
+	"style": "new-york",
+	// Not a React Server Components app (Vite SPA), so generated components must
+	// not get the "use client" directive.
+	"rsc": false,
+	"tsx": true,
+	"tailwind": {
+		// Empty string = Tailwind v4 CSS-first: there is no tailwind.config.js for
+		// shadcn to patch. Tokens live in the @theme block of src/index.css.
+		"config": "",
+		"css": "src/index.css",
+		"baseColor": "neutral",
+		"cssVariables": true,
+		"prefix": ""
+	},
+	"aliases": {
+		"components": "@/components",
+		"utils": "@/lib/utils",
+		"ui": "@/components/ui",
+		"lib": "@/lib",
+		"hooks": "@/hooks"
+	}
+}

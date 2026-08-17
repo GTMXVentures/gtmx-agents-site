@@ -1,0 +1,6 @@
+# Public marketing site — everything is meant to be indexed.
+User-agent: *
+Allow: /
+
+# Absolute URL required: crawlers ignore a relative Sitemap directive.
+Sitemap: https://gtmxagents.com/sitemap.xml

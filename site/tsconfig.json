@@ -1,0 +1,39 @@
+{
+	// Browser app project. The Worker has its own project (tsconfig.worker.json)
+	// because @cloudflare/workers-types and the DOM lib define conflicting globals.
+	"extends": "../tsconfig.base.json",
+	"include": ["src/**/*", "tests/**/*", "vite.config.ts", "vitest.config.ts"],
+	"exclude": ["node_modules", "dist"],
+	"compilerOptions": {
+		// Vite/esbuild emits the JS; tsc is a type-checker only.
+		"noEmit": true,
+
+		// ESNext + bundler resolution: leave module syntax alone and resolve imports
+		// the way Vite does (package.json "exports", extensionless paths).
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+
+		// react-jsx (not "preserve"): with noEmit, "preserve" leaves tsc unable to
+		// type-check the JSX factory call, and @vitejs/plugin-react uses the
+		// automatic runtime anyway — so no `import React` needed in .tsx files.
+		"jsx": "react-jsx",
+
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"resolveJsonModule": true,
+
+		// vite/client gives import.meta.env and the ?url / ?raw / *.svg asset modules.
+		// "node" is here only because vite.config.ts / vitest.config.ts are in `include`
+		// and run in Node (they use node:path + import.meta.dirname). The alternative —
+		// a third tsconfig.node.json project — is more moving parts than one landing
+		// page warrants. Don't reach for `process` or `node:fs` from src/.
+		// vitest/globals declares describe/it/expect as ambient globals, matching
+		// `globals: true` in vitest.config.ts — without it every test file fails
+		// typecheck with "Cannot find name 'describe'".
+		"types": ["vite/client", "node", "vitest/globals"],
+
+		// Alias mirrored in vite.config.ts AND vitest.config.ts — three places, keep in sync.
+		"paths": {
+			"@/*": ["./src/*"]
+		}
+	}
+}

@@ -1,0 +1,30 @@
+{
+	"name": "gtmx-agents-site-workspace",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "pnpm --filter gtmx-agents-site dev",
+		"build": "pnpm --filter gtmx-agents-site build",
+		"typecheck": "pnpm --filter gtmx-agents-site typecheck",
+		"test": "pnpm --filter gtmx-agents-site test",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"ci:lint": "biome ci ."
+	},
+	"//devDependencies": "Biome lives ONLY here, at the root, because biome.jsonc is a root-level config that covers the whole repo — one binary, one version, one source of truth. TypeScript is a per-package dep (site/package.json) since each package runs its own tsc against its own tsconfig.",
+	"devDependencies": {
+		"@biomejs/biome": "^2.4.10"
+	},
+	"//pnpm.onlyBuiltDependencies": "pnpm 10 blocks postinstall scripts by default. These three legitimately need theirs: esbuild and workerd fetch/verify their platform binaries (wrangler dev fails without workerd's), and @tailwindcss/oxide compiles the Rust scanner. Anything not listed here stays blocked — that is the point.",
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"esbuild",
+			"workerd",
+			"@tailwindcss/oxide"
+		]
+	},
+	"packageManager": "pnpm@10.32.1",
+	"engines": {
+		"node": ">=22"
+	}
+}

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<!--
+			ALL SEO/social metadata is static, in this file, on purpose.
+			Unfurlers (LinkedIn, Slack, WhatsApp, X) fetch the HTML and do NOT run
+			JavaScript — anything injected by React is invisible to them. Googlebot
+			does render JS, but treating it as the only consumer would still break
+			every link preview. Single route today, so there is nothing to make
+			dynamic; revisit prerendering only if routes multiply.
+		-->
+		<title>GTMX Agents — AI agents for startup fundraising</title>
+		<meta
+			name="description"
+			content="Most of a raise is logistics. GTMX Agents runs investor matching, outreach, and diligence end to end — so you only take the meetings. Join the waitlist."
+		/>
+		<!-- Absolute canonical: prevents the www host and any workers.dev preview URL
+		     from being indexed as duplicate content. -->
+		<link rel="canonical" href="https://gtmxagents.com/" />
+		<meta name="robots" content="index, follow" />
+
+		<!-- Open Graph. og:image must be an ABSOLUTE URL — several unfurlers do not
+		     resolve relative paths. 1200x630 is the ratio LinkedIn/X/Slack all crop
+		     cleanly; declaring width/height lets them lay out the card before the
+		     image finishes downloading. -->
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="GTMX Agents" />
+		<meta property="og:url" content="https://gtmxagents.com/" />
+		<meta property="og:title" content="GTMX Agents — AI agents for startup fundraising" />
+		<meta
+			property="og:description"
+			content="Most of a raise is logistics. GTMX Agents runs investor matching, outreach, and diligence end to end — so you only take the meetings. Join the waitlist."
+		/>
+		<meta property="og:image" content="https://gtmxagents.com/og.png" />
+		<meta property="og:image:secure_url" content="https://gtmxagents.com/og.png" />
+		<meta property="og:image:type" content="image/png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content="GTMX Agents — AI agents for startup fundraising" />
+		<meta property="og:locale" content="en_US" />
+
+		<!-- twitter:card summary_large_image gives the full-width image card; without
+		     it X falls back to a small thumbnail. twitter:image is repeated because
+		     X reads its own namespace first. -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="GTMX Agents — AI agents for startup fundraising" />
+		<meta
+			name="twitter:description"
+			content="Most of a raise is logistics. GTMX Agents runs investor matching, outreach, and diligence end to end — so you only take the meetings. Join the waitlist."
+		/>
+		<meta name="twitter:image" content="https://gtmxagents.com/og.png" />
+		<meta name="twitter:image:alt" content="GTMX Agents — AI agents for startup fundraising" />
+
+		<!-- The ONE webfont on this site: Bodoni Moda, display headlines only (see the
+		     type notes in src/index.css). Body and mono stay on system stacks.
+
+		     Both preconnects are required and are NOT redundant: Google serves the CSS
+		     from fonts.googleapis.com and the woff2 files from the separate
+		     fonts.gstatic.com origin, so without the second hint the font request pays
+		     a fresh DNS+TLS handshake after the CSS has already parsed. crossorigin is
+		     mandatory on the gstatic hint — font fetches are CORS requests, and a
+		     preconnect without it opens a connection the font fetch cannot reuse.
+
+		     display=swap keeps the LCP headline paintable in the fallback didone
+		     immediately; the axes are pinned to what is actually used (roman +
+		     italic, weights 400-600, full optical-size range) so no unused instance
+		     is downloaded. -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..600;1,6..96,400..600&display=swap"
+		/>
+
+		<!-- Matches --color-background in src/index.css. Keeps mobile browser chrome
+		     from flashing white against a dark page. -->
+		<meta name="theme-color" content="#0b0d12" />
+		<meta name="color-scheme" content="dark" />
+
+		<!-- SVG favicon: one file, sharp at every size, no PNG matrix to maintain.
+		     Safari <16 falls back to /favicon.ico if one is ever added. -->
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="apple-touch-icon" href="/favicon.svg" />
+
+		<!-- JSON-LD Organization: feeds Google's knowledge panel / brand entity and is
+		     the machine-readable link between the domain and the GTMX Ventures brand.
+		     Keep `url` and `logo` absolute. -->
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "Organization",
+				"name": "GTMX Agents",
+				"legalName": "GTMX Ventures",
+				"url": "https://gtmxagents.com/",
+				"logo": "https://gtmxagents.com/favicon.svg",
+				"image": "https://gtmxagents.com/og.png",
+				"description": "Most of a raise is logistics. GTMX Agents runs investor matching, outreach, and diligence end to end — so you only take the meetings. Join the waitlist.",
+				"parentOrganization": {
+					"@type": "Organization",
+					"name": "GTMX Ventures",
+					"url": "https://gtmxventures.com/"
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<div id="root">
+			<!-- Rendered only when JS is off/blocked or the bundle fails to load. Gives
+			     crawlers and text-mode readers a real H1 + value prop instead of an
+			     empty div. Kept inside #root so React's hydration replaces it. -->
+			<noscript>
+				<h1>GTMX Agents</h1>
+				<p>
+					Most of a raise is logistics. GTMX Agents runs investor matching, outreach, and
+					diligence end to end — so you only take the meetings.
+				</p>
+			</noscript>
+		</div>
+		<script type="module" src="/src/main.tsx"></script>
+	</body>
+</html>
