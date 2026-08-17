@@ -317,6 +317,13 @@ jobs:
 
       - name: Comment preview URL on the PR
         uses: actions/github-script@v7
+        # The comment is a nicety layered on top of a preview that already
+        # exists — a GitHub API brownout (observed 503s, 2026-08-17) must not
+        # mark the whole preview job red. `retries` covers transient 5xx from
+        # the API; `continue-on-error` covers a full outage. The preview URL is
+        # deterministic (constructed below), so a missing comment loses nothing
+        # that a re-run or the Actions log doesn't still show.
+        continue-on-error: true
         env:
           # -------------------------------------------------------------
           # The URL is CONSTRUCTED, not parsed out of wrangler's stdout.
@@ -338,6 +345,9 @@ jobs:
           CF_WORKERS_SUBDOMAIN: ${{ vars.CF_WORKERS_SUBDOMAIN }}
           WORKER_NAME: gtmx-agents-site
         with:
+          # Transparent octokit retry on transient API 5xx (the github-script
+          # action wires this into its Octokit instance).
+          retries: 3
           script: |
             const marker = '<!-- cf-preview -->';
             const prNumber = context.payload.pull_request.number;
