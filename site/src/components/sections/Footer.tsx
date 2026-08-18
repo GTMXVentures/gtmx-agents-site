@@ -16,7 +16,8 @@ export function Footer(): ReactElement {
 			<div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-10 sm:flex-row sm:items-baseline sm:justify-between sm:px-8">
 				<div>
 					<p className="font-display font-medium text-ink text-sm">GTMX Agents</p>
-					<p className="mt-1 text-ink-subtle text-xs">Agent-run fundraising, by GTMX Ventures.</p>
+					<p className="mt-1 text-ink-subtle text-xs">Agent-run fundraising.</p>
+					<p className="mt-3 text-ink-subtle text-xs">Supported by GTMX Ventures.</p>
 				</div>
 				<div className="flex flex-col gap-1 text-xs sm:items-end">
 					<a
@@ -25,7 +26,7 @@ export function Footer(): ReactElement {
 					>
 						hello@gtmxagents.com
 					</a>
-					<p className="text-ink-subtle">© 2026 GTMX Ventures</p>
+					<p className="text-ink-subtle">© 2026 GTMX Agents</p>
 				</div>
 			</div>
 		</footer>
