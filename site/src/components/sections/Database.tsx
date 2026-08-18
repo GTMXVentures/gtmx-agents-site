@@ -1,5 +1,12 @@
-import type { ReactElement } from "react";
-import { COVERAGE, formatCount, LARGEST_SECTOR_FIRMS, SECTORS } from "@/data/coverage";
+import { type ReactElement, useState } from "react";
+import {
+	COVERAGE,
+	formatCount,
+	largestFirmsForStage,
+	STAGES,
+	type StageId,
+	sectorsForStage,
+} from "@/data/coverage";
 
 /**
  * Database — the credibility section.
@@ -18,6 +25,11 @@ import { COVERAGE, formatCount, LARGEST_SECTOR_FIRMS, SECTORS } from "@/data/cov
  *  - The reachable segment is drawn inside the firms bar, not beside it, because
  *    reachable partners are a subset of the firms — two adjacent bars would
  *    imply two independent quantities.
+ *
+ *  - The stage filter rescales the bars to the largest sector WITHIN the selected
+ *    stage. Holding the global scale would render every Pre-Series A row as a
+ *    sliver, since that stage's biggest sector is ~331 firms against a 2,204
+ *    all-stages maximum.
  *
  * The bar widths are computed from the data at render time. Hard-coded
  * percentages would silently drift the moment a count in @/data/coverage is
@@ -53,6 +65,10 @@ const HEADLINE_STATS = [
 ];
 
 export function Database(): ReactElement {
+	const [stage, setStage] = useState<StageId>("all");
+	const sectors = sectorsForStage(stage);
+	const largestFirms = largestFirmsForStage(stage);
+
 	return (
 		<section
 			aria-labelledby="database-heading"
@@ -101,13 +117,47 @@ export function Database(): ReactElement {
 						<p className="eyebrow">Firms · reachable partners</p>
 					</div>
 
+					{/* Stage filter. Plain buttons rather than a <select>: there are four
+					    options, they fit on one line, and the whole point is that a founder
+					    can see at a glance that Pre-Series A is an option at all. A native
+					    select would hide three of the four behind a click.
+
+					    `aria-pressed` (not role="tab") because these filter a table that is
+					    always visible — there is no panel being swapped in, which is what a
+					    tablist would promise. */}
+					{/* A real <fieldset>, not a div with role="group" — same semantics, and
+					    the <legend> gives the group an accessible name without an id/
+					    aria-labelledby pair to keep in sync. Browser default fieldset
+					    chrome is reset by the utilities. */}
+					<fieldset className="flex flex-wrap gap-2 border-line border-b px-6 py-4 sm:px-8">
+						<legend className="sr-only">Filter sector coverage by funding stage</legend>
+						{STAGES.map((option) => {
+							const selected = option.id === stage;
+							return (
+								<button
+									aria-pressed={selected}
+									className={`rounded-control border px-3 py-1.5 font-mono text-[0.6875rem] uppercase tracking-[0.12em] transition-colors duration-200 ${
+										selected
+											? "border-accent-line bg-accent-soft text-accent"
+											: "border-line text-ink-subtle hover:bg-surface-hover hover:text-ink"
+									}`}
+									key={option.id}
+									onClick={() => setStage(option.id)}
+									type="button"
+								>
+									{option.name}
+								</button>
+							);
+						})}
+					</fieldset>
+
 					<ul className="divide-y divide-line">
-						{SECTORS.map((sector) => {
+						{sectors.map((sector) => {
 							// Both bars share one scale — the largest sector's firm count —
 							// so widths are comparable across rows AND the reachable segment
 							// reads as a proportion of the firms it sits inside.
-							const firmsWidth = (sector.firms / LARGEST_SECTOR_FIRMS) * 100;
-							const reachableWidth = (sector.reachable / LARGEST_SECTOR_FIRMS) * 100;
+							const firmsWidth = (sector.firms / largestFirms) * 100;
+							const reachableWidth = (sector.reachable / largestFirms) * 100;
 
 							return (
 								<li
@@ -149,8 +199,9 @@ export function Database(): ReactElement {
 					</ul>
 
 					<p className="border-line border-t px-6 py-4 text-ink-subtle text-xs sm:px-8">
-						Reachable = a named partner with a verified email. Firms appear in every sector they
-						invest in, so sector totals exceed {formatCount(COVERAGE.firms)}.
+						Reachable = a named partner with a verified email. Firms appear in every sector and
+						stage they invest in, so these rows overlap and their total exceeds{" "}
+						{formatCount(COVERAGE.firms)}.
 					</p>
 				</div>
 

@@ -67,3 +67,111 @@ export const LARGEST_SECTOR_FIRMS = SECTORS.reduce((max, sector) => Math.max(max
 export function formatCount(value: number): string {
 	return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
+
+/**
+ * Funding stages the sector table can be filtered by.
+ *
+ * Only three, and that is a data constraint rather than a design one: Seed,
+ * Pre-Series A and Series A are the stages the database actually carries in
+ * volume. Growth and late-stage mandates are too thin to quote honestly, so
+ * they are not offered as a filter rather than shown as near-empty rows.
+ *
+ * `all` is not a stage — it is the unfiltered view, and it maps to the totals
+ * already in SECTORS. Keeping it in the same list lets the UI render one row of
+ * buttons instead of special-casing a "clear filter" control.
+ */
+export const STAGES = [
+	{ id: "all", name: "All stages" },
+	{ id: "seed", name: "Seed" },
+	{ id: "pre-a", name: "Pre-Series A" },
+	{ id: "series-a", name: "Series A" },
+] as const;
+
+export type StageId = (typeof STAGES)[number]["id"];
+
+interface StageCell {
+	readonly firms: number;
+	readonly reachable: number;
+}
+
+/**
+ * Sector x stage counts, same definitions as SECTORS: `firms` is firms that
+ * list the sector AND the stage, `reachable` is the subset with a named partner
+ * on a verified email.
+ *
+ * These do NOT sum to the SECTORS totals, and should not be made to. A fund
+ * that invests at both Seed and Series A is counted in both stage columns and
+ * once in the sector total, so the stage rows overlap by design — the same
+ * reason the footnote already warns that sector totals exceed COVERAGE.firms.
+ */
+const SECTOR_STAGE_COVERAGE: Record<string, Record<Exclude<StageId, "all">, StageCell>> = {
+	"b2b-saas": {
+		seed: { firms: 1758, reachable: 642 },
+		"pre-a": { firms: 331, reachable: 175 },
+		"series-a": { firms: 1269, reachable: 528 },
+	},
+	"ai-ml": {
+		seed: { firms: 1802, reachable: 653 },
+		"pre-a": { firms: 312, reachable: 149 },
+		"series-a": { firms: 1301, reachable: 525 },
+	},
+	fintech: {
+		seed: { firms: 1549, reachable: 633 },
+		"pre-a": { firms: 306, reachable: 162 },
+		"series-a": { firms: 1263, reachable: 542 },
+	},
+	enterprise: {
+		seed: { firms: 1097, reachable: 452 },
+		"pre-a": { firms: 184, reachable: 94 },
+		"series-a": { firms: 950, reachable: 388 },
+	},
+	healthcare: {
+		seed: { firms: 980, reachable: 429 },
+		"pre-a": { firms: 208, reachable: 113 },
+		"series-a": { firms: 767, reachable: 373 },
+	},
+	deeptech: {
+		seed: { firms: 1008, reachable: 399 },
+		"pre-a": { firms: 184, reachable: 99 },
+		"series-a": { firms: 703, reachable: 309 },
+	},
+	consumer: {
+		seed: { firms: 977, reachable: 402 },
+		"pre-a": { firms: 210, reachable: 118 },
+		"series-a": { firms: 643, reachable: 330 },
+	},
+	climate: {
+		seed: { firms: 572, reachable: 249 },
+		"pre-a": { firms: 124, reachable: 67 },
+		"series-a": { firms: 395, reachable: 190 },
+	},
+};
+
+/**
+ * The sector table's rows for a given stage. Returns SECTORS unchanged for
+ * `all`, so the default render is identical to the pre-filter one.
+ *
+ * Order is preserved from SECTORS (descending by total firm count) rather than
+ * re-sorted per stage. Re-sorting would make rows jump between filters, and the
+ * question a founder is answering — "where does my sector sit?" — is easier when
+ * the row stays put and only its numbers move.
+ */
+export function sectorsForStage(stage: StageId): readonly SectorCoverage[] {
+	if (stage === "all") return SECTORS;
+	return SECTORS.map((sector) => {
+		const cell = SECTOR_STAGE_COVERAGE[sector.id]?.[stage];
+		return cell ? { ...sector, firms: cell.firms, reachable: cell.reachable } : sector;
+	});
+}
+
+/**
+ * The 100% mark for the coverage bars at a given stage.
+ *
+ * Scaled to the largest sector WITHIN the current filter, not to the global
+ * maximum. Pre-Series A tops out around 331 firms against a global max of 2,204,
+ * so a fixed scale would collapse every Pre-Series A bar into an unreadable
+ * sliver and answer no question at all.
+ */
+export function largestFirmsForStage(stage: StageId): number {
+	return sectorsForStage(stage).reduce((max, sector) => Math.max(max, sector.firms), 0);
+}
