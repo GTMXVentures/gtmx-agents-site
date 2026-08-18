@@ -71,7 +71,7 @@ export function Database(): ReactElement {
 					<p className="mt-5 text-ink-muted leading-[1.7]">
 						An agent is only as good as what it can see. The Matching Agent does not search the web
 						for investors — it works a maintained database of firms, partners and verified contact
-						routes that GTMX Ventures already runs live deals against.
+						routes that live fundraises already run against.
 					</p>
 				</div>
 

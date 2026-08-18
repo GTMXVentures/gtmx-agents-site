@@ -7,7 +7,7 @@
  * page ends up claiming 7,033 firms in the hero and 6,800 further down. Import
  * from here instead, and change a figure exactly once.
  *
- * These are real counts from the GTMX Ventures investor database, not
+ * These are real counts from the investor database behind the product, not
  * illustrative placeholders. If they are refreshed, refresh this file — and
  * keep `reachablePartners` consistent with the definition in the footnote
  * rendered by the database section: a named partner with a verified email.

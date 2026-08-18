@@ -158,7 +158,7 @@ export function Hero(): ReactElement {
 					</div>
 
 					<p className="mt-5 text-ink-subtle text-xs">
-						Built on the GTMX Ventures investor database.
+						Built on a maintained database of {formatCount(COVERAGE.firms)} investor firms.
 					</p>
 				</div>
 
