@@ -2,6 +2,6 @@ config:
   gtmxsite:accountId: 9237f076a6f4f2f834a0509132a99f7a
   gtmxsite:zoneName: gtmxagents.com
   gtmxsite:workerName: gtmx-agents-site
-  gtmxsite:attachWorkerDomain: "false"
+  gtmxsite:attachWorkerDomain: "true"
   cloudflare:apiToken:
     secure: AAABAJBL6M4dwABfY6eh9HV5Yr24VJxpxuGVGFwHd+TJ02m+lCm+F1sjUfoLoCSJU5teJVJEaZvaic21dEIpohOOH9Ghue89JxKtG4MEjmPqa2goMQ==
