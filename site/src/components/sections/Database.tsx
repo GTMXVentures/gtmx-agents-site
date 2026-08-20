@@ -46,12 +46,6 @@ const HEADLINE_STATS = [
 		label: "Verified emails",
 		note: "Partners the Outreach Agent can reach directly today.",
 	},
-	{
-		id: "stages",
-		value: String(COVERAGE.dealRoomStages),
-		label: "Deal-room stages",
-		note: "Nine carry a raise forward, four record how it ended.",
-	},
 ];
 
 export function Database(): ReactElement {
@@ -78,13 +72,13 @@ export function Database(): ReactElement {
 						Check the database before you pitch.
 					</h2>
 					<p className="mt-5 text-ink-muted leading-[1.7]">
-						An agent is only as good as what it can see. Pick your sector and your stage: these are
-						counts from the database GTMX Ventures runs live deals against, not a sample.
+						An agent is only as good as what it can see. Pick a sector and a stage to query the same
+						index the Matching Agent runs against — these are live counts, not a sample.
 					</p>
 				</Reveal>
 
 				<Reveal delay={80}>
-					<ul className="mt-14 grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+					<ul className="mt-14 grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-3">
 						{HEADLINE_STATS.map((stat) => (
 							<li key={stat.id} className="bg-surface p-6 sm:p-7">
 								<p className="font-display font-bold text-[clamp(1.75rem,3vw,2.5rem)] text-ink tabular-nums leading-none tracking-[-0.03em]">
@@ -103,59 +97,71 @@ export function Database(): ReactElement {
 					<div className="relative mt-4 overflow-hidden rounded-card border border-line bg-surface">
 						<BorderBeam duration={16} delay={1} />
 
-						{/* Two fieldsets rather than divs with role="group": the <legend>
-						    names each group for assistive tech with no id to keep in sync. */}
-						<div className="grid gap-px bg-line sm:grid-cols-[minmax(0,1fr)_auto]">
-							<fieldset className="bg-surface px-6 py-6 sm:px-8">
-								<legend className="eyebrow">Sector</legend>
-								<div className="mt-4 flex flex-wrap gap-2">
-									{SECTORS.map((sector) => {
-										const selected = sector.id === sectorId;
-										return (
-											<button
-												aria-pressed={selected}
-												className={`rounded-control border px-3.5 py-2 font-display text-sm transition-colors duration-200 ${
-													selected
-														? "border-accent-line bg-accent-soft text-accent"
-														: "border-line text-ink-muted hover:bg-surface-hover hover:text-ink"
-												}`}
-												key={sector.id}
-												onClick={() => setSectorId(sector.id)}
-												type="button"
-											>
-												{sector.name}
-											</button>
-										);
-									})}
-								</div>
-							</fieldset>
+						{/* Two stacked full-width rows rather than side-by-side columns.
+						    Side by side, the sector chips wrapped to two lines while the
+						    three stage chips filled one, so the panel had a large empty
+						    quadrant. Stacking makes both rows the same shape and puts the
+						    two choices in the order they are made.
 
-							<fieldset className="bg-surface px-6 py-6 sm:px-8">
-								<legend className="eyebrow">Stage</legend>
-								<div className="mt-4 flex flex-wrap gap-2">
-									{STAGES.filter((option) => option.id !== "all").map((option) => {
-										const selected = option.id === stage;
-										return (
-											<button
-												aria-pressed={selected}
-												className={`rounded-control border px-3.5 py-2 font-display text-sm transition-colors duration-200 ${
-													selected
-														? "border-line bg-primary text-primary-foreground"
-														: "border-line text-ink-muted hover:bg-surface-hover hover:text-ink"
-												}`}
-												key={option.id}
-												onClick={() => setStage(option.id)}
-												type="button"
-											>
-												{option.name}
-											</button>
-										);
-									})}
-								</div>
-							</fieldset>
-						</div>
+						    <fieldset>/<legend> rather than a div with role="group": same
+						    semantics, and the legend names the group with no id to keep in
+						    sync. The legend is positioned as a label column at sm and above
+						    so the chips align across both rows. */}
+						<fieldset className="border-line border-b px-6 py-5 sm:flex sm:items-baseline sm:gap-6 sm:px-8">
+							<legend className="eyebrow sm:hidden">Sector</legend>
+							<p aria-hidden="true" className="eyebrow hidden w-24 shrink-0 sm:block">
+								Sector
+							</p>
+							<div className="mt-4 flex flex-wrap gap-2 sm:mt-0">
+								{SECTORS.map((sector) => {
+									const selected = sector.id === sectorId;
+									return (
+										<button
+											aria-pressed={selected}
+											className={`rounded-control border px-3.5 py-2 font-display text-sm transition-colors duration-200 ${
+												selected
+													? "border-accent-line bg-accent-soft text-accent"
+													: "border-line text-ink-muted hover:bg-surface-hover hover:text-ink"
+											}`}
+											key={sector.id}
+											onClick={() => setSectorId(sector.id)}
+											type="button"
+										>
+											{sector.name}
+										</button>
+									);
+								})}
+							</div>
+						</fieldset>
 
-						<div className="border-line border-t px-6 py-8 sm:px-8 sm:py-10">
+						<fieldset className="border-line border-b px-6 py-5 sm:flex sm:items-baseline sm:gap-6 sm:px-8">
+							<legend className="eyebrow sm:hidden">Stage</legend>
+							<p aria-hidden="true" className="eyebrow hidden w-24 shrink-0 sm:block">
+								Stage
+							</p>
+							<div className="mt-4 flex flex-wrap gap-2 sm:mt-0">
+								{STAGES.filter((option) => option.id !== "all").map((option) => {
+									const selected = option.id === stage;
+									return (
+										<button
+											aria-pressed={selected}
+											className={`rounded-control border px-3.5 py-2 font-display text-sm transition-colors duration-200 ${
+												selected
+													? "border-line bg-primary text-primary-foreground"
+													: "border-line text-ink-muted hover:bg-surface-hover hover:text-ink"
+											}`}
+											key={option.id}
+											onClick={() => setStage(option.id)}
+											type="button"
+										>
+											{option.name}
+										</button>
+									);
+								})}
+							</div>
+						</fieldset>
+
+						<div className="px-6 py-8 sm:px-8 sm:py-10">
 							<div className="grid gap-6 sm:grid-cols-2">
 								<div>
 									<p className="eyebrow">Firms in scope</p>

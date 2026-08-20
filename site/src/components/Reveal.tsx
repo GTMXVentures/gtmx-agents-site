@@ -18,7 +18,12 @@ import { type ReactElement, type ReactNode, useEffect, useRef, useState } from "
  * Set empties, which on this page is a few seconds after load.
  * ------------------------------------------------------------------------- */
 
-type Pending = { readonly node: Element; readonly show: () => void };
+/* `top` is the node's position in DOCUMENT space, measured once on register.
+ * Storing it — rather than calling getBoundingClientRect() per node per frame —
+ * is what keeps the sweep off the layout path: reading a rect during scroll
+ * forces a synchronous layout, and doing that for every pending node on every
+ * animation frame is exactly the kind of work that makes a page feel heavy. */
+type Pending = { node: Element; top: number; readonly show: () => void };
 
 const pending = new Set<Pending>();
 let watching = false;
@@ -26,9 +31,11 @@ let frame = 0;
 
 function sweep(): void {
 	frame = 0;
-	const limit = window.innerHeight * 0.88;
+	// Pure arithmetic against cached positions — no DOM reads, so this cannot
+	// force a layout however many nodes are still pending.
+	const limit = window.scrollY + window.innerHeight * 0.88;
 	for (const entry of pending) {
-		if (entry.node.getBoundingClientRect().top <= limit) {
+		if (entry.top <= limit) {
 			entry.show();
 			pending.delete(entry);
 		}
@@ -41,18 +48,27 @@ function onScroll(): void {
 	frame = requestAnimationFrame(sweep);
 }
 
+/* Cached positions go stale when the layout reflows, so resize re-measures
+ * before sweeping. This is the only place a rect is read after registration. */
+function onResize(): void {
+	for (const entry of pending) {
+		entry.top = entry.node.getBoundingClientRect().top + window.scrollY;
+	}
+	onScroll();
+}
+
 function startWatching(): void {
 	if (watching) return;
 	watching = true;
 	window.addEventListener("scroll", onScroll, { passive: true });
-	window.addEventListener("resize", onScroll, { passive: true });
+	window.addEventListener("resize", onResize, { passive: true });
 }
 
 function stopWatching(): void {
 	if (!watching) return;
 	watching = false;
 	window.removeEventListener("scroll", onScroll);
-	window.removeEventListener("resize", onScroll);
+	window.removeEventListener("resize", onResize);
 }
 
 interface RevealProps {
@@ -92,7 +108,11 @@ export function Reveal({
 		if (node.getBoundingClientRect().top <= window.innerHeight * 0.88) return;
 
 		setShown(false);
-		const entry: Pending = { node, show: () => setShown(true) };
+		const entry: Pending = {
+			node,
+			top: node.getBoundingClientRect().top + window.scrollY,
+			show: () => setShown(true),
+		};
 		pending.add(entry);
 		startWatching();
 		// One sweep on the next frame catches a scroll position restored or
@@ -109,9 +129,15 @@ export function Reveal({
 		<Tag
 			ref={ref as never}
 			className={`transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-				shown ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
+				shown ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
 			} ${className}`}
-			style={{ transitionDelay: `${delay}ms` }}
+			// will-change only while the element is still waiting: leaving it on
+			// permanently keeps a compositor layer alive for every revealed block
+			// on the page, which costs more than the animation saves.
+			style={{
+				transitionDelay: `${delay}ms`,
+				willChange: shown ? undefined : "opacity, transform",
+			}}
 		>
 			{children}
 		</Tag>

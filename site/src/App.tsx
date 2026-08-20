@@ -8,7 +8,6 @@ import { Database } from "@/components/sections/Database";
 import { Faq } from "@/components/sections/Faq";
 import { Footer } from "@/components/sections/Footer";
 import { Hero } from "@/components/sections/Hero";
-import { Mcp } from "@/components/sections/Mcp";
 import { Problem } from "@/components/sections/Problem";
 import { Waitlist } from "@/components/sections/Waitlist";
 
@@ -23,8 +22,8 @@ import { Waitlist } from "@/components/sections/Waitlist";
  * the contentinfo role.
  *
  * Section order is an argument, not a layout: claim (Hero) → why it is needed
- * (Problem) → how it works (Agents) → why to believe it (Database) → how to
- * extend it (Mcp) → who is behind it (BackedBy) → objections (Faq) → act
+ * (Problem) → how it works (Agents) → why to believe it (Database) → who is
+ * behind it (BackedBy) → objections (Faq) → act
  * (Waitlist). Database sits AFTER the capability claims on purpose; it is the
  * only checkable section on the page, so it works as proof rather than as an
  * opening statistic nobody has context for yet.
@@ -80,7 +79,6 @@ export default function App(): ReactElement {
 				<Problem />
 				<Agents />
 				<Database />
-				<Mcp />
 				<BackedBy />
 				<Faq />
 				<Waitlist />

@@ -70,8 +70,8 @@ export function Waitlist(): ReactElement {
 							Put the agents on your raise.
 						</h2>
 						<p className="mt-5 text-ink-muted leading-[1.7]">
-							We are onboarding a first group of founders raising now, and the advisory teams
-							running rounds alongside them. Tell us where to reach you.
+							Access opens in cohorts while the agents are still being tuned against live rounds.
+							Leave an address and we will send yours when it is ready.
 						</p>
 
 						<form onSubmit={handleSubmit} className="mt-10">

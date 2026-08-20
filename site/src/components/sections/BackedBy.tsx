@@ -1,34 +1,39 @@
 import type { ReactElement } from "react";
+import gtmxVenturesLogo from "@/assets/gtmx-ventures.svg";
 import { Reveal } from "@/components/Reveal";
 import { COVERAGE, formatCount } from "@/data/coverage";
 
 /**
  * Backed by GTMX Ventures.
  *
- * This is the page's only real credential, and it does a specific job: it
- * explains where a maintained database of {COVERAGE.firms} investor firms came
- * from before the product existed. Without it, the numbers further up read as a
- * scrape. With it, they read as the by-product of an advisory practice that
- * runs rounds — which is what they are.
+ * One job: explain where a maintained database of investor firms came from
+ * before the product existed. Without it the figures upstream read as a scrape.
  *
- * Kept to three facts and a link. A longer "about us" here would compete with
- * the CTA immediately below it.
+ * Kept short deliberately. This is a backer credit, not an about-us — the
+ * product is the agents and the data layer, and a long institutional passage
+ * here would compete with the CTA directly below it.
+ *
+ * The mark is vendored into src/assets rather than hotlinked from the GTMX
+ * Ventures CDN: an <img> pointing at someone else's Webflow bucket breaks
+ * silently when they redesign, and importing it through Vite gets a content
+ * hash and long-lived caching for free. It ships white-on-transparent, which is
+ * what this page needs, so it is used as-is with no filter.
  */
-const CREDENTIALS = [
+const FACTS = [
 	{
-		id: "practice",
-		label: "Advisory practice",
-		note: "The agents run on the same database GTMX Ventures uses on live mandates.",
+		id: "data",
+		label: "Where the data came from",
+		note: `The ${formatCount(COVERAGE.firms)} firms were assembled and maintained for live mandates, not scraped for a launch.`,
 	},
 	{
-		id: "database",
-		label: "Maintained, not scraped",
-		note: `Every one of the ${formatCount(COVERAGE.firms)} firms is promoted by a person before it goes live.`,
+		id: "loop",
+		label: "How it stays current",
+		note: "Nightly enrichment, with every new record reviewed before it reaches the live table.",
 	},
 	{
 		id: "side",
-		label: "Founder-side",
-		note: "GTMX Agents works for the company raising, never for the fund writing the cheque.",
+		label: "Whose side it is on",
+		note: "The agents work for the company raising, never for the fund writing the cheque.",
 	},
 ];
 
@@ -40,40 +45,42 @@ export function BackedBy(): ReactElement {
 			className="scroll-mt-4 border-line border-t bg-mantle"
 		>
 			<div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-28">
-				<Reveal className="max-w-2xl">
+				<Reveal className="mx-auto max-w-2xl text-center">
 					<p className="eyebrow">Backed by</p>
+
+					{/* The wordmark carries the name, so the heading does not repeat it —
+					    an <h2> reading "GTMX Ventures" above a logo saying the same thing
+					    is the sort of duplication a screen reader pass makes obvious. */}
+					<img
+						alt="GTMX Ventures"
+						className="mx-auto mt-6 h-8 w-auto"
+						height={34}
+						src={gtmxVenturesLogo}
+						width={148}
+					/>
+
 					<h2
 						id="backed-by-heading"
-						className="mt-5 text-balance font-display font-bold text-[clamp(2rem,4.5vw,3.25rem)] text-ink leading-[1] tracking-[-0.03em]"
+						className="mt-8 text-balance font-display font-bold text-[clamp(1.75rem,3.5vw,2.5rem)] text-ink leading-[1.05] tracking-[-0.03em]"
 					>
-						Built inside GTMX Ventures.
+						The data layer came first.
 					</h2>
 					<p className="mt-5 text-ink-muted leading-[1.7]">
-						GTMX Agents comes out of an advisory practice that runs fundraises. The database was
-						built to do that work, and the agents automate the parts of it that were always the
-						same.
+						GTMX Ventures spent years building and maintaining the investor database the agents run
+						on. That is why the numbers on this page are counts rather than estimates.
 					</p>
 				</Reveal>
 
-				<ul className="mt-12 grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-3">
-					{CREDENTIALS.map((item) => (
-						<li key={item.id} className="bg-surface p-7">
-							<p className="font-display font-medium text-ink text-sm">{item.label}</p>
-							<p className="mt-2.5 text-ink-subtle text-sm leading-[1.6]">{item.note}</p>
-						</li>
-					))}
-				</ul>
-
-				<p className="mt-8">
-					<a
-						className="font-display font-medium text-ink text-sm underline decoration-line underline-offset-4 transition-colors duration-200 hover:text-accent hover:decoration-accent"
-						href="https://gtmxventures.com"
-						rel="noreferrer"
-						target="_blank"
-					>
-						More about GTMX Ventures
-					</a>
-				</p>
+				<Reveal delay={80}>
+					<ul className="mt-14 grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-3">
+						{FACTS.map((fact) => (
+							<li key={fact.id} className="bg-surface p-7">
+								<p className="eyebrow">{fact.label}</p>
+								<p className="mt-3 text-ink-muted text-sm leading-[1.6]">{fact.note}</p>
+							</li>
+						))}
+					</ul>
+				</Reveal>
 			</div>
 		</section>
 	);

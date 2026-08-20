@@ -25,14 +25,18 @@ export function Hero(): ReactElement {
 	return (
 		<section
 			aria-labelledby="hero-heading"
-			className="relative overflow-hidden border-line border-b"
+			className="relative flex min-h-[calc(100svh-4.0625rem)] items-center overflow-hidden border-line border-b"
 		>
 			{/* Ambient only — see the motion notes in index.css. Static washes, behind
 			    everything, pointer-events off so they can never intercept a click. */}
 			<div aria-hidden="true" className="pointer-events-none absolute inset-0 subtle-grid" />
 			<div aria-hidden="true" className="pointer-events-none absolute inset-0 hero-glow" />
 
-			<div className="relative mx-auto max-w-6xl px-6 py-24 text-center sm:px-8 sm:py-32">
+			{/* svh, not vh: on mobile Safari `100vh` is the tallest the viewport ever
+			    gets, so a vh-sized hero is clipped by the browser chrome on load.
+			    4.0625rem is the header's height — subtracting it means the hero fills
+			    exactly what is left rather than pushing a scrollbar on every visit. */}
+			<div className="relative mx-auto w-full max-w-6xl px-6 py-12 text-center sm:px-8 sm:py-16">
 				{/* animation-delay is set inline, not via a utility: `animate-rise` is the
 				    `animation` SHORTHAND, and a separately-emitted delay utility can sort
 				    before it and get reset to 0. The reduced-motion block in index.css
@@ -44,21 +48,21 @@ export function Hero(): ReactElement {
 
 				<h1
 					id="hero-heading"
-					className="mx-auto mt-9 max-w-5xl animate-rise text-balance font-display font-bold text-[clamp(2.75rem,8vw,6.5rem)] text-ink leading-[0.92] tracking-[-0.04em]"
+					className="mx-auto mt-7 max-w-5xl animate-rise text-balance font-display font-bold text-[clamp(2.5rem,7vw,5.75rem)] text-ink leading-[0.92] tracking-[-0.04em]"
 					style={{ animationDelay: "60ms" }}
 				>
 					Agents that run your fundraise.
 				</h1>
 
 				<p
-					className="mx-auto mt-8 max-w-2xl animate-rise text-balance text-ink-muted text-xl leading-[1.45] sm:text-2xl"
+					className="mx-auto mt-6 max-w-2xl animate-rise text-balance text-ink-muted text-xl leading-[1.45] sm:text-2xl"
 					style={{ animationDelay: "120ms" }}
 				>
 					So you can stay on customers and revenue.
 				</p>
 
 				<div
-					className="mt-11 flex animate-rise flex-col items-center justify-center gap-3 sm:flex-row"
+					className="mt-9 flex animate-rise flex-col items-center justify-center gap-3 sm:flex-row"
 					style={{ animationDelay: "180ms" }}
 				>
 					<a
@@ -79,12 +83,12 @@ export function Hero(): ReactElement {
 				    it?". The reach funnel is the better story in the database section,
 				    where "reachable" can be defined; here it would need a footnote. */}
 				<dl
-					className="relative mx-auto mt-16 grid max-w-4xl animate-rise grid-cols-2 gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-4"
+					className="relative mx-auto mt-12 grid max-w-4xl animate-rise grid-cols-2 gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-4"
 					style={{ animationDelay: "240ms" }}
 				>
 					<BorderBeam duration={14} />
 					{INVESTOR_TYPES.map((stat) => (
-						<div key={stat.id} className="bg-surface px-5 py-7">
+						<div key={stat.id} className="bg-surface px-5 py-6">
 							{/* The label is repeated as an sr-only <dt> so the number is never
 							    announced bare — "3,473" alone is meaningless in a linear pass. */}
 							<dt className="sr-only">{stat.label}</dt>
@@ -99,16 +103,16 @@ export function Hero(): ReactElement {
 				</dl>
 
 				<p
-					className="mx-auto mt-12 max-w-3xl animate-rise text-ink-muted leading-[1.75]"
+					className="mx-auto mt-10 max-w-3xl animate-rise text-ink-muted leading-[1.75]"
 					style={{ animationDelay: "300ms" }}
 				>
-					The agents sit on top of a maintained investor database with an intelligence layer over
-					it. They build your pipeline, run the outreach, and get you meetings with the right
-					investors. They keep track of every process and conversation, and act as your fundraising
-					coach — so each round teaches the next one.
+					Four agents run on a maintained investor database with a matching layer over it. They
+					build the pipeline, write the outreach, and hold one live state per fund across every
+					inbox. Every reply is scored back into the model, so the list gets sharper the longer the
+					round runs.
 				</p>
 
-				<p className="mt-8 text-ink-subtle text-sm">
+				<p className="mt-6 text-ink-subtle text-sm">
 					Built on a maintained database of {formatCount(COVERAGE.firms)} investor firms.
 				</p>
 			</div>

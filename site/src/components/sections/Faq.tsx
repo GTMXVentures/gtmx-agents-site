@@ -27,7 +27,7 @@ export function Faq(): ReactElement {
 							id="faq-heading"
 							className="mt-5 text-balance font-display font-bold text-[clamp(2rem,4.5vw,3.25rem)] text-ink leading-[1] tracking-[-0.03em]"
 						>
-							Before you hand over your raise.
+							How it actually works.
 						</h2>
 					</Reveal>
 

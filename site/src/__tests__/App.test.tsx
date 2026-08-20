@@ -33,7 +33,7 @@ describe("App", () => {
 	it("renders the product value proposition", () => {
 		render(<App />);
 
-		expect(screen.getByText(/build your pipeline, run the outreach/i)).toBeInTheDocument();
+		expect(screen.getByText(/build the pipeline, write the outreach/i)).toBeInTheDocument();
 	});
 
 	it("exposes the banner, main and contentinfo landmarks", () => {

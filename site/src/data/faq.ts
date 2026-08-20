@@ -29,7 +29,7 @@ export const FAQS: readonly FaqItem[] = [
 		id: "data",
 		question: "Where does the investor data come from, and how fresh is it?",
 		answer:
-			"It is a maintained database GTMX Ventures runs live deals against, refreshed on a nightly enrichment run. Every scraped or bulk record lands in a review queue and a person promotes it — nothing writes straight to the live table.",
+			"A maintained index, refreshed on a nightly enrichment run rather than scraped once and left to rot. Every incoming record lands in a review queue and is promoted from there — nothing writes straight to the live table, which is why the counts on this page are exact.",
 	},
 	{
 		id: "coverage",
@@ -44,9 +44,9 @@ export const FAQS: readonly FaqItem[] = [
 			"Check it on this page. The sector table filters by Seed, Pre-Series A and Series A, and reports how many firms invest there and how many of those have a partner you can email.",
 	},
 	{
-		id: "mcp",
-		question: "Can I connect my own agents?",
+		id: "matching",
+		question: "How does the matching actually rank a fund?",
 		answer:
-			"Yes, over the Model Context Protocol. Claude Code, Cursor or something you wrote yourself can run the same searches and read the same deal-room state the GTMX agents work from.",
+			"Your profile and each fund's written thesis are embedded and compared, then filtered hard on the structured fields — stage, sector, cheque band, geography. Similarity alone would surface funds that sound right and never write at your stage, so the filters are what make the ranking usable. Every result carries the reason it ranked, which is what lets you argue with it.",
 	},
 ];
