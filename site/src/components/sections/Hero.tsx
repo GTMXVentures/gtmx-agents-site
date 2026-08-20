@@ -1,10 +1,10 @@
 import type { ReactElement } from "react";
-import { BorderBeam } from "@/components/BorderBeam";
+import { MouseSpotlight } from "@/components/MouseSpotlight";
 import { PulseDot } from "@/components/PulseDot";
 import { formatCount, INVESTOR_TYPES } from "@/data/coverage";
 
 /**
- * Hero — centred, single column.
+ * Hero — centred, single column with mouse-following spotlight glow.
  */
 export function Hero(): ReactElement {
 	return (
@@ -54,13 +54,17 @@ export function Hero(): ReactElement {
 					</a>
 				</div>
 
+				{/* Breakdown Figures with Mouse-Following Spotlight */}
 				<dl
-					className="relative mx-auto mt-12 grid max-w-4xl animate-rise grid-cols-2 gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-4"
+					className="group relative mx-auto mt-12 grid max-w-4xl animate-rise grid-cols-2 gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-4"
 					style={{ animationDelay: "240ms" }}
 				>
-					<BorderBeam duration={14} />
+					<MouseSpotlight size={500} opacity={0.16} />
 					{INVESTOR_TYPES.map((stat) => (
-						<div key={stat.id} className="bg-surface px-5 py-6">
+						<div
+							key={stat.id}
+							className="relative z-10 bg-surface px-5 py-6 transition-colors duration-200 hover:bg-surface/90"
+						>
 							<dt className="sr-only">{stat.label}</dt>
 							<dd className="font-display font-bold text-[clamp(1.75rem,3.5vw,2.75rem)] text-ink tabular-nums leading-none tracking-[-0.03em]">
 								{formatCount(stat.value)}

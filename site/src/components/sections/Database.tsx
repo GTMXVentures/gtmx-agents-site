@@ -1,5 +1,5 @@
 import { type ReactElement, useState } from "react";
-import { BorderBeam } from "@/components/BorderBeam";
+import { MouseSpotlight } from "@/components/MouseSpotlight";
 import { Reveal } from "@/components/Reveal";
 import {
 	COVERAGE,
@@ -95,7 +95,7 @@ export function Database(): ReactElement {
 
 				<Reveal delay={140}>
 					<div className="relative mt-4 overflow-hidden rounded-card border border-line bg-surface">
-						<BorderBeam duration={16} delay={1} />
+						<MouseSpotlight size={600} opacity={0.14} />
 
 						{/* Two stacked full-width rows rather than side-by-side columns.
 						    Side by side, the sector chips wrapped to two lines while the
