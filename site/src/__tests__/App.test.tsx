@@ -18,7 +18,7 @@ describe("App", () => {
 		render(<App />);
 
 		expect(
-			screen.getByRole("heading", { level: 1, name: /agents run the raise/i }),
+			screen.getByRole("heading", { level: 1, name: /agents that run your fundraise/i }),
 		).toBeInTheDocument();
 	});
 
@@ -33,9 +33,7 @@ describe("App", () => {
 	it("renders the product value proposition", () => {
 		render(<App />);
 
-		expect(
-			screen.getByText(/investor matching, outreach\s+orchestration, conversation tracking/i),
-		).toBeInTheDocument();
+		expect(screen.getByText(/build your pipeline, run the outreach/i)).toBeInTheDocument();
 	});
 
 	it("exposes the banner, main and contentinfo landmarks", () => {
