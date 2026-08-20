@@ -3,9 +3,13 @@
 // longer resolves.
 import type { ReactElement } from "react";
 import { Agents } from "@/components/sections/Agents";
+import { BackedBy } from "@/components/sections/BackedBy";
 import { Database } from "@/components/sections/Database";
+import { DealRoom } from "@/components/sections/DealRoom";
+import { Faq } from "@/components/sections/Faq";
 import { Footer } from "@/components/sections/Footer";
 import { Hero } from "@/components/sections/Hero";
+import { Mcp } from "@/components/sections/Mcp";
 import { Problem } from "@/components/sections/Problem";
 import { Waitlist } from "@/components/sections/Waitlist";
 
@@ -20,10 +24,15 @@ import { Waitlist } from "@/components/sections/Waitlist";
  * the contentinfo role.
  *
  * Section order is an argument, not a layout: claim (Hero) → why it is needed
- * (Problem) → how it works (Agents) → why to believe it (Database) → act
+ * (Problem) → how it works (Agents) → why to believe it (Database, DealRoom) →
+ * how to extend it (Mcp) → who is behind it (BackedBy) → objections (Faq) → act
  * (Waitlist). Database sits AFTER the capability claims on purpose; it is the
  * only checkable section on the page, so it works as proof rather than as an
  * opening statistic nobody has context for yet.
+ *
+ * Faq is last before the CTA because it exists to clear the final objections —
+ * moving it above the proof sections would have it answering questions the
+ * reader has not thought to ask yet.
  */
 export default function App(): ReactElement {
 	return (
@@ -45,14 +54,21 @@ export default function App(): ReactElement {
 					</p>
 
 					<nav aria-label="Page sections" className="flex items-center gap-1 sm:gap-2">
+						{/* `wide` marks links that only appear once there is room. Three
+						    section links plus the CTA overflow a 390px viewport, and the CTA
+						    is the one thing that must never be pushed off — so the least
+						    important link is the one that drops. */}
 						{[
-							{ href: "#agents", label: "Agents" },
-							{ href: "#database", label: "Database" },
+							{ href: "#agents", label: "Agents", wide: false },
+							{ href: "#database", label: "Database", wide: false },
+							{ href: "#deal-room", label: "Deal room", wide: true },
 						].map((link) => (
 							<a
 								key={link.href}
 								href={link.href}
-								className="rounded-control px-2 py-2 font-mono text-[0.6875rem] text-ink-subtle uppercase tracking-[0.12em] transition-colors duration-200 hover:text-ink sm:px-3 sm:tracking-[0.16em]"
+								className={`rounded-control px-2 py-2 font-mono text-[0.6875rem] text-ink-subtle uppercase tracking-[0.12em] transition-colors duration-200 hover:text-ink sm:px-3 sm:tracking-[0.16em] ${
+									link.wide ? "hidden sm:inline-block" : ""
+								}`}
 							>
 								{link.label}
 							</a>
@@ -72,6 +88,10 @@ export default function App(): ReactElement {
 				<Problem />
 				<Agents />
 				<Database />
+				<DealRoom />
+				<Mcp />
+				<BackedBy />
+				<Faq />
 				<Waitlist />
 			</main>
 

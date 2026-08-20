@@ -204,49 +204,6 @@ export function Database(): ReactElement {
 						{formatCount(COVERAGE.firms)}.
 					</p>
 				</div>
-
-				{/* --- The deal room ------------------------------------------------ */}
-				<div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
-					<div className="rounded-card border border-line bg-surface p-7 sm:p-10">
-						<h3 className="text-balance font-display font-bold text-[clamp(1.5rem,3vw,2.25rem)] text-ink leading-[1.05] tracking-[-0.025em]">
-							Thirteen stages. Nine move forward. Four record how it ended.
-						</h3>
-						<p className="mt-5 max-w-xl text-ink-muted leading-[1.7]">
-							Every fund on your raise sits in exactly one stage, and the Tracking Agent is what
-							keeps it there honestly. Nine stages carry a conversation toward a signature. The
-							other four are the ones founders never write down — passed, stalled, no reply,
-							withdrawn — which is why nobody can answer "what actually happened to those two
-							hundred funds?" six months later.
-						</p>
-					</div>
-
-					<ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-						{[
-							{
-								id: "advancing",
-								value: COVERAGE.advancingStages,
-								label: "Advancing stages",
-								note: "Matched through to signature.",
-							},
-							{
-								id: "terminal",
-								value: COVERAGE.terminalStages,
-								label: "Terminal stages",
-								note: "How and why a conversation closed.",
-							},
-						].map((item) => (
-							<li key={item.id} className="rounded-card border border-line bg-surface p-6 sm:p-7">
-								<p className="font-display font-bold text-4xl text-ink tabular-nums leading-none tracking-[-0.03em]">
-									{item.value}
-								</p>
-								<p className="mt-3 font-mono text-[0.6875rem] text-ink uppercase tracking-[0.16em]">
-									{item.label}
-								</p>
-								<p className="mt-2 text-ink-subtle text-xs leading-[1.6]">{item.note}</p>
-							</li>
-						))}
-					</ul>
-				</div>
 			</div>
 		</section>
 	);

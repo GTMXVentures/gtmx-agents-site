@@ -135,10 +135,20 @@
 	--radius-control: 8px;
 
 	/* --- Motion.
-	 * Three keyframes, and every one of them REPORTS SOMETHING — there is no
-	 * decorative animation on this page. `rise` is the hero's load sequence;
-	 * `pulse-ring` and `caret` are the two live-state indicators, and they are
-	 * the only things on the page that loop.
+	 * Two categories, and the distinction is the thing to preserve.
+	 *
+	 * REPORTING motion says something true about state: `rise` is the load
+	 * sequence, `pulse-ring` and `caret` are live-state indicators. These are
+	 * load-bearing and must never be removed to "calm the page down".
+	 *
+	 * AMBIENT motion — `border-beam`, plus the static `.hero-glow` and
+	 * `.subtle-grid` washes — is atmosphere, added deliberately (2026-08-18) on
+	 * the product owner's call. An earlier version of this comment said there
+	 * was NO decorative animation here; that is no longer true, and pretending
+	 * otherwise would leave the next reader distrusting the whole file. The
+	 * constraint that survives is narrower but still real: ambient motion is
+	 * SLOW (>= 12s), LOW-CONTRAST, and never attached to a figure or a status —
+	 * so it can never be mistaken for the page reporting something.
 	 *
 	 * Both looping keyframes are written so their FINAL frame is the resting
 	 * state (ring fully faded, caret visible). The reduced-motion block below
@@ -148,6 +158,9 @@
 	--animate-rise: rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
 	--animate-pulse-ring: pulse-ring 2400ms cubic-bezier(0.16, 1, 0.3, 1) infinite;
 	--animate-caret: caret 1100ms steps(1, end) infinite;
+	/* Deliberately slow. At 14s a full lap reads as atmosphere; anything under
+	 * ~8s starts to look like a progress indicator. */
+	--animate-border-beam: border-beam 14s linear infinite;
 }
 
 @keyframes rise {
@@ -169,6 +182,15 @@
 	to {
 		opacity: 0;
 		transform: scale(3.2);
+	}
+}
+
+/* Travels a light along a panel's edge. Driven by offset-distance rather than
+ * a translate pair so the path follows the border radius for free — the
+ * element is placed on an offset-path by BorderBeam.tsx. */
+@keyframes border-beam {
+	to {
+		offset-distance: 100%;
 	}
 }
 
@@ -246,6 +268,29 @@
 	 * repeated a dozen times. */
 	.eyebrow {
 		@apply font-mono text-[0.6875rem] text-ink-subtle uppercase tracking-[0.16em];
+	}
+
+	/* Ambient wash behind the hero. Static, not animated: a large soft radial in
+	 * the accent hue at very low alpha, which lifts the top of a true-black page
+	 * without introducing a second surface colour. Kept in CSS rather than as a
+	 * Tailwind arbitrary value because the stop list is long enough that inlining
+	 * it in JSX would be unreadable. */
+	.hero-glow {
+		background: radial-gradient(
+			62% 46% at 50% 0%,
+			rgb(72 224 138 / 0.09) 0%,
+			rgb(72 224 138 / 0.03) 38%,
+			transparent 72%
+		);
+	}
+
+	/* Faint engineering grid. 40px cells at 2% white — visible as texture, never
+	 * as lines you could count. */
+	.subtle-grid {
+		background-image:
+			linear-gradient(to right, rgb(255 255 255 / 0.02) 1px, transparent 1px),
+			linear-gradient(to bottom, rgb(255 255 255 / 0.02) 1px, transparent 1px);
+		background-size: 40px 40px;
 	}
 
 	/* Live-state pill. Only ever wraps text that describes what an agent is doing

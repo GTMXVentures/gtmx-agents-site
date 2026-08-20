@@ -1,4 +1,5 @@
 import type { ReactElement } from "react";
+import { BorderBeam } from "@/components/BorderBeam";
 import { COVERAGE, formatCount, INVESTOR_TYPES } from "@/data/coverage";
 
 /**
@@ -31,8 +32,17 @@ const HERO_STATS = INVESTOR_TYPES;
 
 export function Hero(): ReactElement {
 	return (
-		<section aria-labelledby="hero-heading" className="border-line border-b">
-			<div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-28">
+		<section
+			aria-labelledby="hero-heading"
+			className="relative overflow-hidden border-line border-b"
+		>
+			{/* Ambient only — see the motion notes in index.css. Both layers are
+			    static washes rather than animations, and sit behind everything with
+			    pointer-events off so they can never intercept a click. */}
+			<div aria-hidden="true" className="pointer-events-none absolute inset-0 subtle-grid" />
+			<div aria-hidden="true" className="pointer-events-none absolute inset-0 hero-glow" />
+
+			<div className="relative mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-28">
 				{/* animation-delay is set inline, not via a utility: `animate-rise` is the
 				    `animation` SHORTHAND, and a separately-emitted delay utility can sort
 				    before it and get reset to 0. The reduced-motion block in index.css
@@ -56,9 +66,10 @@ export function Hero(): ReactElement {
 				    gap-px over a bg-line parent draws the dividers — one hairline between
 				    cells, none on the outer edges. */}
 				<dl
-					className="mt-14 grid animate-rise grid-cols-2 gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-4"
+					className="relative mt-14 grid animate-rise grid-cols-2 gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-4"
 					style={{ animationDelay: "160ms" }}
 				>
+					<BorderBeam duration={14} />
 					{HERO_STATS.map((stat) => (
 						<div key={stat.id} className="bg-surface px-6 py-7 sm:px-7 sm:py-8">
 							{/* The label is repeated as an sr-only <dt> so the number is never
