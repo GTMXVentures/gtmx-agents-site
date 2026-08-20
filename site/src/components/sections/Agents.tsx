@@ -1,15 +1,10 @@
 import type { ReactElement } from "react";
+import { MouseSpotlight } from "@/components/MouseSpotlight";
 import { Reveal } from "@/components/Reveal";
 import { COVERAGE, formatCount } from "@/data/coverage";
 
 /**
- * Agents — the autonomous deal team.
- *
- * 4 specialized agents executing a unified handoff pipeline:
- * 1. Matching Agent: Sourcing-in-reverse against active fund theses
- * 2. Outreach Agent: High-context personalized approach generation
- * 3. Tracking Agent: Cross-inbox live sync & 13-stage deal room
- * 4. Diligence Agent: Proactive data room & automated Q&A readiness
+ * Agents — the autonomous deal team with interactive spotlight cards.
  */
 const AGENTS = [
 	{
@@ -72,9 +67,10 @@ export function Agents(): ReactElement {
 					{AGENTS.map((agent) => (
 						<li
 							key={agent.id}
-							className="flex flex-col bg-surface p-7 transition-colors duration-200 hover:bg-surface-hover sm:p-9"
+							className="group relative flex flex-col overflow-hidden bg-surface p-7 transition-colors duration-200 hover:bg-surface-hover sm:p-9"
 						>
-							<div className="flex items-center gap-3">
+							<MouseSpotlight size={380} opacity={0.16} />
+							<div className="relative z-10 flex items-center gap-3">
 								<span
 									aria-hidden="true"
 									className="flex size-8 shrink-0 items-center justify-center rounded-control border border-line font-mono text-[0.6875rem] text-accent tabular-nums font-bold"
@@ -86,12 +82,14 @@ export function Agents(): ReactElement {
 								</h3>
 							</div>
 
-							<p className="mt-5 font-display font-medium text-ink text-lg leading-snug tracking-[-0.015em]">
+							<p className="relative z-10 mt-5 font-display font-medium text-ink text-lg leading-snug tracking-[-0.015em]">
 								{agent.summary}
 							</p>
-							<p className="mt-3 text-ink-muted text-sm leading-[1.75]">{agent.body}</p>
+							<p className="relative z-10 mt-3 text-ink-muted text-sm leading-[1.75]">
+								{agent.body}
+							</p>
 
-							<p className="mt-auto border-line border-t pt-5 font-mono text-[0.6875rem] text-ink-subtle leading-[1.6]">
+							<p className="relative z-10 mt-auto border-line border-t pt-5 font-mono text-[0.6875rem] text-ink-subtle leading-[1.6]">
 								<span className="text-accent">&rarr;</span> {agent.handoff}
 							</p>
 						</li>

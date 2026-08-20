@@ -1,12 +1,10 @@
 import type { ReactElement } from "react";
 import gtmxVenturesLogo from "@/assets/gtmx-ventures.svg";
+import { MouseSpotlight } from "@/components/MouseSpotlight";
 import { Reveal } from "@/components/Reveal";
 
 /**
- * Backed by GTMX Ventures.
- *
- * Concise institutional backer credit highlighting lineage, syndication reach,
- * and 100% founder-first alignment.
+ * Backed by GTMX Ventures with interactive spotlight cards.
  */
 const FACTS = [
 	{
@@ -61,11 +59,17 @@ export function BackedBy(): ReactElement {
 				<Reveal delay={80}>
 					<ul className="mt-14 grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-3">
 						{FACTS.map((fact) => (
-							<li key={fact.id} className="bg-surface p-7 transition-colors hover:bg-surface-hover">
-								<p className="font-mono text-[0.6875rem] text-accent uppercase tracking-[0.14em]">
-									{fact.label}
-								</p>
-								<p className="mt-3 text-ink-muted text-sm leading-[1.6]">{fact.note}</p>
+							<li
+								key={fact.id}
+								className="group relative overflow-hidden bg-surface p-7 transition-colors hover:bg-surface-hover"
+							>
+								<MouseSpotlight size={360} opacity={0.16} />
+								<div className="relative z-10">
+									<p className="font-mono text-[0.6875rem] text-accent uppercase tracking-[0.14em]">
+										{fact.label}
+									</p>
+									<p className="mt-3 text-ink-muted text-sm leading-[1.6]">{fact.note}</p>
+								</div>
 							</li>
 						))}
 					</ul>
