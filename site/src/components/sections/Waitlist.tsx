@@ -19,7 +19,7 @@ import { PulseDot } from "@/components/PulseDot";
  */
 type Status = "idle" | "submitting" | "success" | "error";
 
-const CONTACT_EMAIL = "hello@gtmxagents.com";
+const CONTACT_EMAIL = "kumar@gtmxagents.com";
 
 export function Waitlist(): ReactElement {
 	// useId, not a hard-coded string: keeps label/input association correct if the

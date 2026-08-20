@@ -41,11 +41,11 @@ describe("Waitlist", () => {
 		// toHaveTextContent, not getByText: the address is a nested <a>, so the
 		// sentence is split across elements.
 		expect(await screen.findByRole("status")).toHaveTextContent(
-			/not wired up to take this yet — reach us at hello@gtmxagents\.com/i,
+			/not wired up to take this yet — reach us at kumar@gtmxagents\.com/i,
 		);
-		expect(screen.getByRole("link", { name: /hello@gtmxagents\.com/i })).toHaveAttribute(
+		expect(screen.getByRole("link", { name: /kumar@gtmxagents\.com/i })).toHaveAttribute(
 			"href",
-			"mailto:hello@gtmxagents.com",
+			"mailto:kumar@gtmxagents.com",
 		);
 	});
 
