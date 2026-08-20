@@ -4,11 +4,6 @@ import type { ReactElement } from "react";
  * Footer — the <footer> here is a direct child of the layout root (see App.tsx),
  * NOT nested inside <main>, so it exposes the `contentinfo` landmark. Nesting it
  * in a sectioning element would silently drop that role.
- *
- * The year is hard-coded rather than computed from `new Date()`: this is a
- * static asset served from cache, so a computed year would differ between the
- * built HTML and a late-hydrating client for no benefit. Bump it on the next
- * meaningful deploy.
  */
 export function Footer(): ReactElement {
 	return (
@@ -21,10 +16,10 @@ export function Footer(): ReactElement {
 				</div>
 				<div className="flex flex-col gap-1 text-xs sm:items-end">
 					<a
-						href="mailto:hello@gtmxagents.com"
-						className="text-ink-muted transition-colors duration-200 hover:text-accent"
+						href="mailto:kumar@gtmxagents.com"
+						className="text-ink-muted transition-colors duration-200 hover:text-accent font-medium"
 					>
-						hello@gtmxagents.com
+						kumar@gtmxagents.com
 					</a>
 					<p className="text-ink-subtle">© 2026 GTMX Agents</p>
 				</div>

@@ -19,7 +19,7 @@ import { PulseDot } from "@/components/PulseDot";
  */
 type Status = "idle" | "submitting" | "success" | "error";
 
-const CONTACT_EMAIL = "hello@gtmxagents.com";
+const CONTACT_EMAIL = "kumar@gtmxagents.com";
 
 export function Waitlist(): ReactElement {
 	// useId, not a hard-coded string: keeps label/input association correct if the
@@ -70,8 +70,8 @@ export function Waitlist(): ReactElement {
 							Put the agents on your raise.
 						</h2>
 						<p className="mt-5 text-ink-muted leading-[1.7]">
-							We are onboarding a first group of founders raising now, and the advisory teams
-							running rounds alongside them. Tell us where to reach you.
+							Access opens in cohorts while the agents are still being tuned against live rounds.
+							Leave an address and we will send yours when it is ready.
 						</p>
 
 						<form onSubmit={handleSubmit} className="mt-10">
@@ -95,7 +95,7 @@ export function Waitlist(): ReactElement {
 									disabled={status === "submitting"}
 									className="rounded-control bg-primary px-6 py-3 font-display font-medium text-primary-foreground text-sm transition-colors duration-200 hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
 								>
-									{status === "submitting" ? "Sending…" : "Join the waitlist"}
+									{status === "submitting" ? "Sending…" : "Talk to us"}
 								</button>
 							</div>
 
@@ -105,12 +105,12 @@ export function Waitlist(): ReactElement {
 							<p role="status" className="mt-4 min-h-6 text-sm leading-[1.6]">
 								{status === "success" ? (
 									<span className="text-accent">
-										You are on the list. We will be in touch before the first cohort opens.
+										Thanks. We will come back to you before the first cohort opens.
 									</span>
 								) : null}
 								{status === "error" ? (
 									<span className="text-ink-muted">
-										Waitlist opens soon — reach us at{" "}
+										Not wired up to take this yet — reach us at{" "}
 										<a href={`mailto:${CONTACT_EMAIL}`} className="text-accent hover:underline">
 											{CONTACT_EMAIL}
 										</a>

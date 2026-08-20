@@ -1,42 +1,32 @@
 import { type ReactElement, useState } from "react";
+import { BorderBeam } from "@/components/BorderBeam";
+import { Reveal } from "@/components/Reveal";
 import {
 	COVERAGE,
 	formatCount,
-	largestFirmsForStage,
+	SECTORS,
 	STAGES,
 	type StageId,
 	sectorsForStage,
 } from "@/data/coverage";
 
 /**
- * Database — the credibility section.
+ * Database — the credibility section, as a coverage check.
  *
  * Everything above this point is a claim about what agents will do. This is the
- * only section that is checkable, so it is deliberately the densest thing on the
- * page: real counts, a sector-by-sector breakdown, and a definition of the one
- * term ("reachable") that a founder would otherwise have to take on trust.
+ * only checkable section, so rather than asserting a total it hands the visitor
+ * the query: pick your sector, pick your stage, see what is actually there.
  *
- * Two decisions worth keeping:
+ * It replaced a static sector table. The table showed more at once, but it
+ * answered "how does my sector compare to the others?", which is not the
+ * question — a founder wants a yes or no about their own row, and a number they
+ * can act on. Two figures and a share bar say that in one glance.
  *
- *  - The sector table is ordered by firm count, descending, and the bars are
- *    scaled to the LARGEST sector rather than each row's own total. A founder
- *    scanning this is asking "is my sector thin?", and a per-row-normalised bar
- *    would render every sector the same width and answer the wrong question.
- *  - The reachable segment is drawn inside the firms bar, not beside it, because
- *    reachable partners are a subset of the firms — two adjacent bars would
- *    imply two independent quantities.
- *
- *  - The stage filter rescales the bars to the largest sector WITHIN the selected
- *    stage. Holding the global scale would render every Pre-Series A row as a
- *    sliver, since that stage's biggest sector is ~331 firms against a 2,204
- *    all-stages maximum.
- *
- * The bar widths are computed from the data at render time. Hard-coded
- * percentages would silently drift the moment a count in @/data/coverage is
- * refreshed, and a chart that disagrees with the number printed next to it is
- * worse than no chart.
+ * The reachable segment is drawn inside the in-scope bar, not beside it,
+ * because reachable firms are a subset — two adjacent bars would imply two
+ * independent quantities. Widths come from the data at render time; hard-coded
+ * percentages would drift the moment a count in @/data/coverage is refreshed.
  */
-
 const HEADLINE_STATS = [
 	{
 		id: "firms",
@@ -48,7 +38,7 @@ const HEADLINE_STATS = [
 		id: "partners",
 		value: formatCount(COVERAGE.partners),
 		label: "Named partners",
-		note: `${formatCount(COVERAGE.firmsWithPartner)} firms have at least one partner attached.`,
+		note: `${formatCount(COVERAGE.firmsWithPartner)} firms have at least one attached.`,
 	},
 	{
 		id: "reachable",
@@ -56,18 +46,15 @@ const HEADLINE_STATS = [
 		label: "Verified emails",
 		note: "Partners the Outreach Agent can reach directly today.",
 	},
-	{
-		id: "stages",
-		value: String(COVERAGE.dealRoomStages),
-		label: "Deal-room stages",
-		note: "One standard funnel, first outreach through signature.",
-	},
 ];
 
 export function Database(): ReactElement {
-	const [stage, setStage] = useState<StageId>("all");
-	const sectors = sectorsForStage(stage);
-	const largestFirms = largestFirmsForStage(stage);
+	const [sectorId, setSectorId] = useState(SECTORS[0].id);
+	const [stage, setStage] = useState<StageId>("series-a");
+
+	const row = sectorsForStage(stage).find((sector) => sector.id === sectorId) ?? SECTORS[0];
+	const share = Math.round((row.reachable / row.firms) * 100);
+	const stageName = STAGES.find((option) => option.id === stage)?.name ?? "";
 
 	return (
 		<section
@@ -76,177 +63,153 @@ export function Database(): ReactElement {
 			className="scroll-mt-4 border-line border-t bg-mantle"
 		>
 			<div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-28">
-				<div className="max-w-2xl">
+				<Reveal className="mx-auto max-w-2xl text-center">
 					<p className="eyebrow">The data layer</p>
 					<h2
 						id="database-heading"
 						className="mt-5 text-balance font-display font-bold text-[clamp(2rem,4.5vw,3.25rem)] text-ink leading-[1] tracking-[-0.03em]"
 					>
-						The database behind the agents.
+						Check the database before you pitch.
 					</h2>
 					<p className="mt-5 text-ink-muted leading-[1.7]">
-						An agent is only as good as what it can see. The Matching Agent does not search the web
-						for investors — it works a maintained database of firms, partners and verified contact
-						routes that live fundraises already run against.
+						An agent is only as good as what it can see. Pick a sector and a stage to query the same
+						index the Matching Agent runs against — these are live counts, not a sample.
 					</p>
-				</div>
+				</Reveal>
 
-				{/* A <ul>, not a <dl>. The design needs the figure ABOVE its label, and a
-				    <dl> requires each <dt> to precede its <dd> — satisfying both would
-				    mean either invalid markup or a visual-order hack for no semantic
-				    gain. Read linearly this is "7,033 / Investor firms / Institutional
-				    VCs…", which is the right order for a screen reader anyway. */}
-				<ul className="mt-12 grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-					{HEADLINE_STATS.map((stat) => (
-						<li key={stat.id} className="bg-surface p-6 sm:p-7">
-							<p className="font-display font-bold text-[clamp(1.75rem,3vw,2.5rem)] text-ink tabular-nums leading-none tracking-[-0.03em]">
-								{stat.value}
-							</p>
-							<p className="mt-3 font-mono text-[0.6875rem] text-ink uppercase tracking-[0.16em]">
-								{stat.label}
-							</p>
-							<p className="mt-2 text-ink-subtle text-xs leading-[1.6]">{stat.note}</p>
-						</li>
-					))}
-				</ul>
-
-				{/* --- Sector coverage --------------------------------------------- */}
-				<div className="mt-4 overflow-hidden rounded-card border border-line bg-surface">
-					<div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-line border-b px-6 py-5 sm:px-8">
-						<h3 className="eyebrow">Sector coverage</h3>
-						<p className="eyebrow">Firms · reachable partners</p>
-					</div>
-
-					{/* Stage filter. Plain buttons rather than a <select>: there are four
-					    options, they fit on one line, and the whole point is that a founder
-					    can see at a glance that Pre-Series A is an option at all. A native
-					    select would hide three of the four behind a click.
-
-					    `aria-pressed` (not role="tab") because these filter a table that is
-					    always visible — there is no panel being swapped in, which is what a
-					    tablist would promise. */}
-					{/* A real <fieldset>, not a div with role="group" — same semantics, and
-					    the <legend> gives the group an accessible name without an id/
-					    aria-labelledby pair to keep in sync. Browser default fieldset
-					    chrome is reset by the utilities. */}
-					<fieldset className="flex flex-wrap gap-2 border-line border-b px-6 py-4 sm:px-8">
-						<legend className="sr-only">Filter sector coverage by funding stage</legend>
-						{STAGES.map((option) => {
-							const selected = option.id === stage;
-							return (
-								<button
-									aria-pressed={selected}
-									className={`rounded-control border px-3 py-1.5 font-mono text-[0.6875rem] uppercase tracking-[0.12em] transition-colors duration-200 ${
-										selected
-											? "border-accent-line bg-accent-soft text-accent"
-											: "border-line text-ink-subtle hover:bg-surface-hover hover:text-ink"
-									}`}
-									key={option.id}
-									onClick={() => setStage(option.id)}
-									type="button"
-								>
-									{option.name}
-								</button>
-							);
-						})}
-					</fieldset>
-
-					<ul className="divide-y divide-line">
-						{sectors.map((sector) => {
-							// Both bars share one scale — the largest sector's firm count —
-							// so widths are comparable across rows AND the reachable segment
-							// reads as a proportion of the firms it sits inside.
-							const firmsWidth = (sector.firms / largestFirms) * 100;
-							const reachableWidth = (sector.reachable / largestFirms) * 100;
-
-							return (
-								<li
-									key={sector.id}
-									className="grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-3 px-6 py-4 transition-colors duration-200 hover:bg-surface-hover sm:grid-cols-[10rem_1fr_auto] sm:px-8"
-								>
-									<span className="font-display font-medium text-ink text-sm">{sector.name}</span>
-
-									{/* Presentational: the same two numbers are printed in words
-									    to the right, so the bar adds nothing for a screen reader
-									    and would only be announced as an unlabelled element. */}
-									<span
-										aria-hidden="true"
-										className="col-span-2 order-last h-1.5 w-full overflow-hidden rounded-full bg-base sm:order-none sm:col-span-1"
-									>
-										{/* ink-subtle at 40% rather than the hairline token: --color-line
-										    is tuned to be nearly invisible as a 1px border, which makes it
-										    unreadable as a 6px data bar on a black track. */}
-										<span
-											className="flex h-full rounded-full bg-ink-subtle/40"
-											style={{ width: `${firmsWidth}%` }}
-										>
-											<span
-												className="h-full rounded-full bg-accent"
-												style={{ width: `${(reachableWidth / firmsWidth) * 100}%` }}
-											/>
-										</span>
-									</span>
-
-									<span className="text-right font-mono text-[0.6875rem] tabular-nums sm:text-xs">
-										<span className="text-ink">{formatCount(sector.firms)}</span>
-										<span className="text-ink-subtle"> firms · </span>
-										<span className="text-accent">{formatCount(sector.reachable)}</span>
-										<span className="text-ink-subtle"> reachable</span>
-									</span>
-								</li>
-							);
-						})}
-					</ul>
-
-					<p className="border-line border-t px-6 py-4 text-ink-subtle text-xs sm:px-8">
-						Reachable = a named partner with a verified email. Firms appear in every sector and
-						stage they invest in, so these rows overlap and their total exceeds{" "}
-						{formatCount(COVERAGE.firms)}.
-					</p>
-				</div>
-
-				{/* --- The deal room ------------------------------------------------ */}
-				<div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
-					<div className="rounded-card border border-line bg-surface p-7 sm:p-10">
-						<h3 className="text-balance font-display font-bold text-[clamp(1.5rem,3vw,2.25rem)] text-ink leading-[1.05] tracking-[-0.025em]">
-							Thirteen stages. Nine move forward. Four record how it ended.
-						</h3>
-						<p className="mt-5 max-w-xl text-ink-muted leading-[1.7]">
-							Every fund on your raise sits in exactly one stage, and the Tracking Agent is what
-							keeps it there honestly. Nine stages carry a conversation toward a signature. The
-							other four are the ones founders never write down — passed, stalled, no reply,
-							withdrawn — which is why nobody can answer "what actually happened to those two
-							hundred funds?" six months later.
-						</p>
-					</div>
-
-					<ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-						{[
-							{
-								id: "advancing",
-								value: COVERAGE.advancingStages,
-								label: "Advancing stages",
-								note: "Matched through to signature.",
-							},
-							{
-								id: "terminal",
-								value: COVERAGE.terminalStages,
-								label: "Terminal stages",
-								note: "How and why a conversation closed.",
-							},
-						].map((item) => (
-							<li key={item.id} className="rounded-card border border-line bg-surface p-6 sm:p-7">
-								<p className="font-display font-bold text-4xl text-ink tabular-nums leading-none tracking-[-0.03em]">
-									{item.value}
+				<Reveal delay={80}>
+					<ul className="mt-14 grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-3">
+						{HEADLINE_STATS.map((stat) => (
+							<li key={stat.id} className="bg-surface p-6 sm:p-7">
+								<p className="font-display font-bold text-[clamp(1.75rem,3vw,2.5rem)] text-ink tabular-nums leading-none tracking-[-0.03em]">
+									{stat.value}
 								</p>
 								<p className="mt-3 font-mono text-[0.6875rem] text-ink uppercase tracking-[0.16em]">
-									{item.label}
+									{stat.label}
 								</p>
-								<p className="mt-2 text-ink-subtle text-xs leading-[1.6]">{item.note}</p>
+								<p className="mt-2 text-ink-subtle text-xs leading-[1.6]">{stat.note}</p>
 							</li>
 						))}
 					</ul>
-				</div>
+				</Reveal>
+
+				<Reveal delay={140}>
+					<div className="relative mt-4 overflow-hidden rounded-card border border-line bg-surface">
+						<BorderBeam duration={16} delay={1} />
+
+						{/* Two stacked full-width rows rather than side-by-side columns.
+						    Side by side, the sector chips wrapped to two lines while the
+						    three stage chips filled one, so the panel had a large empty
+						    quadrant. Stacking makes both rows the same shape and puts the
+						    two choices in the order they are made.
+
+						    <fieldset>/<legend> rather than a div with role="group": same
+						    semantics, and the legend names the group with no id to keep in
+						    sync. The legend is positioned as a label column at sm and above
+						    so the chips align across both rows. */}
+						<fieldset className="border-line border-b px-6 py-5 sm:flex sm:items-baseline sm:gap-6 sm:px-8">
+							<legend className="eyebrow sm:hidden">Sector</legend>
+							<p aria-hidden="true" className="eyebrow hidden w-24 shrink-0 sm:block">
+								Sector
+							</p>
+							<div className="mt-4 flex flex-wrap gap-2 sm:mt-0">
+								{SECTORS.map((sector) => {
+									const selected = sector.id === sectorId;
+									return (
+										<button
+											aria-pressed={selected}
+											className={`rounded-control border px-3.5 py-2 font-display text-sm transition-colors duration-200 ${
+												selected
+													? "border-accent-line bg-accent-soft text-accent"
+													: "border-line text-ink-muted hover:bg-surface-hover hover:text-ink"
+											}`}
+											key={sector.id}
+											onClick={() => setSectorId(sector.id)}
+											type="button"
+										>
+											{sector.name}
+										</button>
+									);
+								})}
+							</div>
+						</fieldset>
+
+						<fieldset className="border-line border-b px-6 py-5 sm:flex sm:items-baseline sm:gap-6 sm:px-8">
+							<legend className="eyebrow sm:hidden">Stage</legend>
+							<p aria-hidden="true" className="eyebrow hidden w-24 shrink-0 sm:block">
+								Stage
+							</p>
+							<div className="mt-4 flex flex-wrap gap-2 sm:mt-0">
+								{STAGES.filter((option) => option.id !== "all").map((option) => {
+									const selected = option.id === stage;
+									return (
+										<button
+											aria-pressed={selected}
+											className={`rounded-control border px-3.5 py-2 font-display text-sm transition-colors duration-200 ${
+												selected
+													? "border-line bg-primary text-primary-foreground"
+													: "border-line text-ink-muted hover:bg-surface-hover hover:text-ink"
+											}`}
+											key={option.id}
+											onClick={() => setStage(option.id)}
+											type="button"
+										>
+											{option.name}
+										</button>
+									);
+								})}
+							</div>
+						</fieldset>
+
+						<div className="px-6 py-8 sm:px-8 sm:py-10">
+							<div className="grid gap-6 sm:grid-cols-2">
+								<div>
+									<p className="eyebrow">Firms in scope</p>
+									<p className="mt-3 font-display font-bold text-[clamp(2.5rem,6vw,4rem)] text-ink tabular-nums leading-none tracking-[-0.035em]">
+										{formatCount(row.firms)}
+									</p>
+									<p className="mt-3 text-ink-muted text-sm leading-[1.6]">
+										invest in {row.name} at {stageName}
+									</p>
+								</div>
+								<div>
+									<p className="eyebrow">Reachable today</p>
+									<p className="mt-3 font-display font-bold text-[clamp(2.5rem,6vw,4rem)] text-accent tabular-nums leading-none tracking-[-0.035em]">
+										{formatCount(row.reachable)}
+									</p>
+									<p className="mt-3 text-ink-muted text-sm leading-[1.6]">
+										have a named partner with a verified email
+									</p>
+								</div>
+							</div>
+
+							<div className="mt-9">
+								{/* Presentational: the same proportion is printed in words below. */}
+								<span
+									aria-hidden="true"
+									className="flex h-1.5 w-full overflow-hidden rounded-full bg-base"
+								>
+									<span
+										className="h-full rounded-full bg-accent transition-[width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+										style={{ width: `${share}%` }}
+									/>
+								</span>
+								<p className="mt-4 text-ink-subtle text-sm leading-[1.6]">
+									<span className="text-ink tabular-nums">{share}%</span> reachable. The rest are on
+									file without a partner contact yet — nightly enrichment keeps working on them.
+								</p>
+							</div>
+						</div>
+					</div>
+				</Reveal>
+
+				<Reveal delay={200}>
+					<p className="mt-6 text-center text-ink-subtle text-sm">
+						Reachable = a named partner with a verified email. Firms appear in every sector and
+						stage they invest in, so these counts overlap and their total exceeds{" "}
+						{formatCount(COVERAGE.firms)}.
+					</p>
+				</Reveal>
 			</div>
 		</section>
 	);

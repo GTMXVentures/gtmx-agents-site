@@ -36,16 +36,16 @@ describe("Waitlist", () => {
 		render(<Waitlist />);
 
 		await user.type(screen.getByLabelText(/work email/i), "founder@example.com");
-		await user.click(screen.getByRole("button", { name: /join the waitlist/i }));
+		await user.click(screen.getByRole("button", { name: /talk to us/i }));
 
 		// toHaveTextContent, not getByText: the address is a nested <a>, so the
 		// sentence is split across elements.
 		expect(await screen.findByRole("status")).toHaveTextContent(
-			/waitlist opens soon — reach us at hello@gtmxagents\.com/i,
+			/not wired up to take this yet — reach us at kumar@gtmxagents\.com/i,
 		);
-		expect(screen.getByRole("link", { name: /hello@gtmxagents\.com/i })).toHaveAttribute(
+		expect(screen.getByRole("link", { name: /kumar@gtmxagents\.com/i })).toHaveAttribute(
 			"href",
-			"mailto:hello@gtmxagents.com",
+			"mailto:kumar@gtmxagents.com",
 		);
 	});
 
@@ -55,9 +55,9 @@ describe("Waitlist", () => {
 		render(<Waitlist />);
 
 		await user.type(screen.getByLabelText(/work email/i), "founder@example.com");
-		await user.click(screen.getByRole("button", { name: /join the waitlist/i }));
+		await user.click(screen.getByRole("button", { name: /talk to us/i }));
 
-		expect(await screen.findByRole("status")).toHaveTextContent(/waitlist opens soon/i);
+		expect(await screen.findByRole("status")).toHaveTextContent(/not wired up to take this yet/i);
 	});
 
 	it("posts the email to /api/waitlist and confirms on success", async () => {
@@ -66,9 +66,9 @@ describe("Waitlist", () => {
 		render(<Waitlist />);
 
 		await user.type(screen.getByLabelText(/work email/i), "founder@example.com");
-		await user.click(screen.getByRole("button", { name: /join the waitlist/i }));
+		await user.click(screen.getByRole("button", { name: /talk to us/i }));
 
-		expect(await screen.findByRole("status")).toHaveTextContent(/you are on the list/i);
+		expect(await screen.findByRole("status")).toHaveTextContent(/we will come back to you/i);
 		expect(fetch).toHaveBeenCalledWith(
 			"/api/waitlist",
 			expect.objectContaining({

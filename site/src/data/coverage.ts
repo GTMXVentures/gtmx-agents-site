@@ -27,6 +27,22 @@ export const COVERAGE = {
 	advancingStages: 9,
 	/** …and the ones that record how a conversation ended. */
 	terminalStages: 4,
+
+	/* --- Composition of the 7,033, by the firm's own type ------------------
+	 * Counted from the `vc_type` column, which is a constrained vocabulary
+	 * rather than free text, so these are exact rather than approximate.
+	 *
+	 * They are SUBSETS, not a partition: VCs + family offices + angels come to
+	 * 4,197, and the remaining 2,836 are PE funds, accelerators, venture debt,
+	 * banks, and firms still awaiting a type. Presenting them as a breakdown
+	 * that sums to the total would be the easy lie here. */
+
+	/** Institutional venture funds — the core of the database. */
+	vcFunds: 3473,
+	/** Single-family offices plus multi-family offices and wealth managers. */
+	familyOffices: 550,
+	/** Angel funds and syndicates, plus individually-listed angels. */
+	angels: 174,
 } as const;
 
 export interface SectorCoverage {
@@ -175,3 +191,19 @@ export function sectorsForStage(stage: StageId): readonly SectorCoverage[] {
 export function largestFirmsForStage(stage: StageId): number {
 	return sectorsForStage(stage).reduce((max, sector) => Math.max(max, sector.firms), 0);
 }
+
+/**
+ * The hero's headline figures: what kind of investor the database actually
+ * holds. A founder raising a seed round cares whether there are angels and
+ * family offices in here at all, not only institutional VCs — and the honest
+ * answer is "far fewer", which this shows rather than hides.
+ *
+ * `Investors` is the total and the other three are subsets of it; see the note
+ * in COVERAGE above for why they do not sum.
+ */
+export const INVESTOR_TYPES = [
+	{ id: "investors", value: COVERAGE.firms, label: "Investors" },
+	{ id: "vcs", value: COVERAGE.vcFunds, label: "VCs" },
+	{ id: "family-offices", value: COVERAGE.familyOffices, label: "Family offices" },
+	{ id: "angels", value: COVERAGE.angels, label: "Angels" },
+] as const;

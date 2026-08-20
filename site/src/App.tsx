@@ -1,36 +1,61 @@
-// React 19 removed the global JSX/React namespaces from @types/react, so return
-// types must be imported explicitly — `React.ReactElement` without an import no
-// longer resolves.
-import type { ReactElement } from "react";
+import Lenis from "lenis";
+import { type ReactElement, useEffect } from "react";
 import { Agents } from "@/components/sections/Agents";
+import { BackedBy } from "@/components/sections/BackedBy";
 import { Database } from "@/components/sections/Database";
+import { Faq } from "@/components/sections/Faq";
 import { Footer } from "@/components/sections/Footer";
 import { Hero } from "@/components/sections/Hero";
 import { Problem } from "@/components/sections/Problem";
 import { Waitlist } from "@/components/sections/Waitlist";
 
-/**
- * Single route — no router. The site is one page; adding react-router/wouter now
- * would ship a router for zero routes. The header links are in-page anchors, not
- * routes. If real routes appear, add `wouter` (per the plan) and keep this
- * component as the layout shell.
- *
- * Landmark structure is deliberate and flat: <header> (banner) → <main> →
- * <footer> (contentinfo), all siblings. Moving <footer> inside <main> would drop
- * the contentinfo role.
- *
- * Section order is an argument, not a layout: claim (Hero) → why it is needed
- * (Problem) → how it works (Agents) → why to believe it (Database) → act
- * (Waitlist). Database sits AFTER the capability claims on purpose; it is the
- * only checkable section on the page, so it works as proof rather than as an
- * opening statistic nobody has context for yet.
- */
 export default function App(): ReactElement {
+	// Initialize High-FPS ProMotion Smooth Scroll using Lerp Interpolation
+	useEffect(() => {
+		if (typeof window === "undefined" || typeof ResizeObserver === "undefined") {
+			return;
+		}
+
+		const lenis = new Lenis({
+			lerp: 0.09, // 120Hz/60Hz adaptive linear interpolation (Apple/Linear standard)
+			wheelMultiplier: 1.0,
+			touchMultiplier: 1.8,
+			smoothWheel: true,
+			syncTouch: false,
+			autoResize: true,
+		});
+
+		let rafId: number;
+		function raf(time: number) {
+			lenis.raf(time);
+			rafId = requestAnimationFrame(raf);
+		}
+
+		rafId = requestAnimationFrame(raf);
+
+		// Handle smooth anchor clicks with offset
+		const handleAnchorClick = (e: MouseEvent) => {
+			const target = (e.target as HTMLElement).closest("a");
+			if (target?.hash && target.origin === window.location.origin) {
+				const element = document.querySelector(target.hash);
+				if (element) {
+					e.preventDefault();
+					lenis.scrollTo(element as HTMLElement, { offset: -40, duration: 1.0 });
+				}
+			}
+		};
+
+		document.addEventListener("click", handleAnchorClick);
+
+		return () => {
+			document.removeEventListener("click", handleAnchorClick);
+			cancelAnimationFrame(rafId);
+			lenis.destroy();
+		};
+	}, []);
+
 	return (
-		<div className="min-h-dvh">
-			{/* Keyboard-only escape hatch past the header. `sr-only focus:not-sr-only`
-			    is the standard pattern: present in the a11y tree, painted only when
-			    focused. */}
+		<div className="min-h-dvh antialiased selection:bg-accent selection:text-accent-ink">
 			<a
 				href="#waitlist"
 				className="sr-only rounded-control bg-primary px-4 py-2 text-primary-foreground text-sm focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-10"
@@ -38,16 +63,20 @@ export default function App(): ReactElement {
 				Skip to the waitlist
 			</a>
 
-			<header className="border-line border-b">
+			<header className="sticky top-0 z-40 border-line border-b bg-background/85 backdrop-blur-md">
 				<div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4 sm:px-8">
-					<p className="whitespace-nowrap font-display font-bold text-ink text-sm tracking-[-0.01em]">
+					<a
+						href="/"
+						className="whitespace-nowrap font-display font-bold text-ink text-sm tracking-[-0.01em]"
+					>
 						GTMX Agents
-					</p>
+					</a>
 
 					<nav aria-label="Page sections" className="flex items-center gap-1 sm:gap-2">
 						{[
 							{ href: "#agents", label: "Agents" },
 							{ href: "#database", label: "Database" },
+							{ href: "#backed-by", label: "Backed By" },
 						].map((link) => (
 							<a
 								key={link.href}
@@ -59,19 +88,21 @@ export default function App(): ReactElement {
 						))}
 						<a
 							href="#waitlist"
-							className="ml-1 rounded-control bg-primary px-4 py-2 font-display font-medium text-primary-foreground text-sm transition-colors duration-200 hover:bg-primary-hover"
+							className="ml-1 rounded-control bg-primary px-4 py-2 font-display font-medium text-primary-foreground text-sm transition-colors duration-200 hover:bg-primary-hover shadow-sm"
 						>
-							Join
+							Talk to us
 						</a>
 					</nav>
 				</div>
 			</header>
 
-			<main>
+			<main className="will-change-transform">
 				<Hero />
 				<Problem />
 				<Agents />
 				<Database />
+				<BackedBy />
+				<Faq />
 				<Waitlist />
 			</main>
 

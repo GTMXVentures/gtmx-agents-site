@@ -21,7 +21,13 @@
 			// shadcn/ui primitives are generated upstream code. Formatting or linting
 			// them creates noise on every `shadcn add` and diffs nobody can review —
 			// the openskillmd platform repo excludes them for the same reason.
-			"!site/src/components/ui"
+			"!site/src/components/ui",
+			// Vendored third-party marks (currently the GTMX Ventures wordmark). Biome
+			// lints a raw .svg as markup and asks for a <title>; these are imported as
+			// image URLs and get their accessible name from the <img alt> at the call
+			// site, so a <title> would be redundant — and editing a vendored file makes
+			// the next re-download a conflict. Ours live in src/ and stay linted.
+			"!site/src/assets"
 		]
 	},
 	"formatter": {
