@@ -1,5 +1,6 @@
 import Lenis from "lenis";
 import { type ReactElement, useEffect } from "react";
+import { GlobalMouseSpotlight } from "@/components/GlobalMouseSpotlight";
 import { Agents } from "@/components/sections/Agents";
 import { BackedBy } from "@/components/sections/BackedBy";
 import { Database } from "@/components/sections/Database";
@@ -55,7 +56,10 @@ export default function App(): ReactElement {
 	}, []);
 
 	return (
-		<div className="min-h-dvh antialiased selection:bg-accent selection:text-accent-ink">
+		<div className="relative min-h-dvh antialiased selection:bg-accent selection:text-accent-ink">
+			{/* Ambient cursor-following gradient */}
+			<GlobalMouseSpotlight />
+
 			<a
 				href="#waitlist"
 				className="sr-only rounded-control bg-primary px-4 py-2 text-primary-foreground text-sm focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-10"

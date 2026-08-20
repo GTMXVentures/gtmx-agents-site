@@ -85,12 +85,6 @@
 	}
 }
 
-@keyframes border-beam {
-	to {
-		offset-distance: 100%;
-	}
-}
-
 @keyframes caret {
 	0%,
 	50% {
