@@ -1,7 +1,6 @@
 import type { ReactElement } from "react";
 import gtmxVenturesLogo from "@/assets/gtmx-ventures.svg";
 import { Reveal } from "@/components/Reveal";
-import { COVERAGE, formatCount } from "@/data/coverage";
 
 /**
  * Backed by GTMX Ventures.
@@ -54,7 +53,8 @@ export function BackedBy(): ReactElement {
 					</h2>
 					<p className="mt-5 text-ink-muted leading-[1.7]">
 						GTMX Ventures spent years building and curating the deep investor intelligence index the
-						agents run on. That is why every partner recommendation carries verified thesis alignment.
+						agents run on. That is why every partner recommendation carries verified thesis
+						alignment.
 					</p>
 				</Reveal>
 

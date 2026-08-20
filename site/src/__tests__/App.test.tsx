@@ -48,7 +48,9 @@ describe("coverage figures", () => {
 	it("quotes the firm count in the database section", () => {
 		render(<App />);
 
-		expect(screen.getAllByText(new RegExp(formatCount(COVERAGE.firms))).length).toBeGreaterThanOrEqual(1);
+		expect(
+			screen.getAllByText(new RegExp(formatCount(COVERAGE.firms))).length,
+		).toBeGreaterThanOrEqual(1);
 	});
 
 	it("breaks the database down by sector with reachable partner counts", () => {

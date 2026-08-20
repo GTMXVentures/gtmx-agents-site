@@ -1,18 +1,10 @@
 import type { ReactElement } from "react";
 import { BorderBeam } from "@/components/BorderBeam";
 import { PulseDot } from "@/components/PulseDot";
-import { COVERAGE, formatCount, INVESTOR_TYPES } from "@/data/coverage";
+import { formatCount, INVESTOR_TYPES } from "@/data/coverage";
 
 /**
  * Hero — centred, single column.
- *
- * Centred rather than left-aligned because there is nothing beside the claim to
- * align to. A left-aligned headline in a full-width container leaves a large
- * dead right margin at desktop widths; centring turns that into symmetry and
- * lets the headline run bigger for the same measure.
- *
- * Load order is staggered by animation-delay so the page assembles top-down
- * rather than appearing at once.
  */
 export function Hero(): ReactElement {
 	return (
@@ -20,7 +12,6 @@ export function Hero(): ReactElement {
 			aria-labelledby="hero-heading"
 			className="relative flex min-h-[calc(100svh-4.0625rem)] items-center overflow-hidden border-line border-b"
 		>
-			{/* Ambient washes */}
 			<div aria-hidden="true" className="pointer-events-none absolute inset-0 subtle-grid" />
 			<div aria-hidden="true" className="pointer-events-none absolute inset-0 hero-glow" />
 
@@ -63,7 +54,6 @@ export function Hero(): ReactElement {
 					</a>
 				</div>
 
-				{/* Breakdown Figures */}
 				<dl
 					className="relative mx-auto mt-12 grid max-w-4xl animate-rise grid-cols-2 gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-4"
 					style={{ animationDelay: "240ms" }}

@@ -1,5 +1,5 @@
-import { type ReactElement, useEffect } from "react";
 import Lenis from "lenis";
+import { type ReactElement, useEffect } from "react";
 import { Agents } from "@/components/sections/Agents";
 import { BackedBy } from "@/components/sections/BackedBy";
 import { Database } from "@/components/sections/Database";
@@ -36,7 +36,7 @@ export default function App(): ReactElement {
 		// Handle smooth anchor clicks with offset
 		const handleAnchorClick = (e: MouseEvent) => {
 			const target = (e.target as HTMLElement).closest("a");
-			if (target && target.hash && target.origin === window.location.origin) {
+			if (target?.hash && target.origin === window.location.origin) {
 				const element = document.querySelector(target.hash);
 				if (element) {
 					e.preventDefault();
@@ -65,7 +65,10 @@ export default function App(): ReactElement {
 
 			<header className="sticky top-0 z-40 border-line border-b bg-background/85 backdrop-blur-md">
 				<div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4 sm:px-8">
-					<a href="#" className="whitespace-nowrap font-display font-bold text-ink text-sm tracking-[-0.01em]">
+					<a
+						href="/"
+						className="whitespace-nowrap font-display font-bold text-ink text-sm tracking-[-0.01em]"
+					>
 						GTMX Agents
 					</a>
 
