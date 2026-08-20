@@ -74,7 +74,7 @@ describe("coverage figures", () => {
 	it("breaks the database down by sector with reachable partner counts", () => {
 		render(<App />);
 
-		const database = screen.getByRole("region", { name: /the database behind the agents/i });
+		const database = screen.getByRole("region", { name: /check the database before you pitch/i });
 
 		expect(within(database).getByText("B2B SaaS")).toBeInTheDocument();
 		expect(within(database).getByText("Climate")).toBeInTheDocument();

@@ -1,4 +1,5 @@
 import type { ReactElement } from "react";
+import { Reveal } from "@/components/Reveal";
 import { COVERAGE, formatCount } from "@/data/coverage";
 
 /**
@@ -40,7 +41,7 @@ export function Problem(): ReactElement {
 	return (
 		<section aria-labelledby="problem-heading" className="border-line border-t">
 			<div className="mx-auto grid max-w-6xl gap-x-16 gap-y-10 px-6 py-20 sm:px-8 sm:py-28 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
-				<div>
+				<Reveal>
 					<p className="eyebrow">The state of play</p>
 					<h2
 						id="problem-heading"
@@ -53,7 +54,7 @@ export function Problem(): ReactElement {
 						is legible, repeatable and almost entirely manual — which is exactly the shape of work
 						an agent team should be doing.
 					</p>
-				</div>
+				</Reveal>
 
 				<ul className="divide-y divide-line border-line border-t lg:border-t-0">
 					{FRICTIONS.map((friction) => (

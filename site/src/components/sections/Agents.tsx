@@ -1,4 +1,5 @@
 import type { ReactElement } from "react";
+import { Reveal } from "@/components/Reveal";
 import { COVERAGE, formatCount } from "@/data/coverage";
 
 /**
@@ -59,7 +60,7 @@ export function Agents(): ReactElement {
 			className="scroll-mt-4 border-line border-t"
 		>
 			<div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-28">
-				<div className="max-w-2xl">
+				<Reveal className="max-w-2xl">
 					<p className="eyebrow">The agent team</p>
 					<h2
 						id="agents-heading"
@@ -71,7 +72,7 @@ export function Agents(): ReactElement {
 						Not four tools you keep in sync — one sequence, where each agent's output is the next
 						one's input. You review, you decide, you take the meeting.
 					</p>
-				</div>
+				</Reveal>
 
 				<ol className="mt-12 grid gap-px overflow-hidden rounded-card border border-line bg-line lg:grid-cols-2">
 					{AGENTS.map((agent) => (

@@ -1,4 +1,5 @@
 import type { ReactElement } from "react";
+import { Reveal } from "@/components/Reveal";
 import { COVERAGE, formatCount } from "@/data/coverage";
 
 /**
@@ -39,7 +40,7 @@ export function BackedBy(): ReactElement {
 			className="scroll-mt-4 border-line border-t bg-mantle"
 		>
 			<div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-28">
-				<div className="max-w-2xl">
+				<Reveal className="max-w-2xl">
 					<p className="eyebrow">Backed by</p>
 					<h2
 						id="backed-by-heading"
@@ -52,7 +53,7 @@ export function BackedBy(): ReactElement {
 						built to do that work, and the agents automate the parts of it that were always the
 						same.
 					</p>
-				</div>
+				</Reveal>
 
 				<ul className="mt-12 grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-3">
 					{CREDENTIALS.map((item) => (

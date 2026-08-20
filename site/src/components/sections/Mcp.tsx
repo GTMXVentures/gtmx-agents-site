@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import { BorderBeam } from "@/components/BorderBeam";
+import { Reveal } from "@/components/Reveal";
 import { COVERAGE, formatCount } from "@/data/coverage";
 
 /**
@@ -42,7 +43,7 @@ export function Mcp(): ReactElement {
 	return (
 		<section aria-labelledby="mcp-heading" id="mcp" className="scroll-mt-4 border-line border-t">
 			<div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-28">
-				<div className="max-w-2xl">
+				<Reveal className="max-w-2xl">
 					<p className="eyebrow">Model Context Protocol</p>
 					<h2
 						id="mcp-heading"
@@ -54,7 +55,7 @@ export function Mcp(): ReactElement {
 						The same database the GTMX agents work from is exposed over MCP. Claude Code, Cursor or
 						an agent you wrote yourself can run the searches and read the deal-room state directly.
 					</p>
-				</div>
+				</Reveal>
 
 				<div className="mt-12 grid gap-4 lg:grid-cols-2">
 					<div className="overflow-hidden rounded-card border border-line bg-surface">
