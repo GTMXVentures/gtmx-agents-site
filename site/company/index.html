@@ -12,14 +12,14 @@
 			every link preview. Single route today, so there is nothing to make
 			dynamic; revisit prerendering only if routes multiply.
 		-->
-		<title>GTMX Agents — agents that run your fundraise</title>
+		<title>Company — GTMX Agents</title>
 		<meta
 			name="description"
-			content="GTMX Agents runs sourcing-in-reverse for founders — investor matching, outreach orchestration, conversation tracking and diligence prep across 5,913 investor firms."
+			content="GTMX Agents was incubated within GTMX Ventures. How we work, what we commit to, and who builds the product."
 		/>
 		<!-- Absolute canonical: prevents the www host and any workers.dev preview URL
 		     from being indexed as duplicate content. -->
-		<link rel="canonical" href="https://gtmxagents.com/" />
+		<link rel="canonical" href="https://gtmxagents.com/company" />
 		<meta name="robots" content="index, follow" />
 
 		<!-- Open Graph. og:image must be an ABSOLUTE URL — several unfurlers do not
@@ -28,11 +28,11 @@
 		     image finishes downloading. -->
 		<meta property="og:type" content="website" />
 		<meta property="og:site_name" content="GTMX Agents" />
-		<meta property="og:url" content="https://gtmxagents.com/" />
-		<meta property="og:title" content="GTMX Agents — agents that run your fundraise" />
+		<meta property="og:url" content="https://gtmxagents.com/company" />
+		<meta property="og:title" content="Company — GTMX Agents" />
 		<meta
 			property="og:description"
-			content="GTMX Agents runs sourcing-in-reverse for founders — investor matching, outreach orchestration, conversation tracking and diligence prep across 5,913 investor firms."
+			content="GTMX Agents was incubated within GTMX Ventures. How we work, what we commit to, and who builds the product."
 		/>
 		<meta property="og:image" content="https://gtmxagents.com/og.png" />
 		<meta property="og:image:secure_url" content="https://gtmxagents.com/og.png" />
@@ -46,13 +46,13 @@
 		     it X falls back to a small thumbnail. twitter:image is repeated because
 		     X reads its own namespace first. -->
 		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:title" content="GTMX Agents — agents that run your fundraise" />
+		<meta name="twitter:title" content="Company — GTMX Agents" />
 		<meta
 			name="twitter:description"
-			content="GTMX Agents runs sourcing-in-reverse for founders — investor matching, outreach orchestration, conversation tracking and diligence prep across 5,913 investor firms."
+			content="GTMX Agents was incubated within GTMX Ventures. How we work, what we commit to, and who builds the product."
 		/>
 		<meta name="twitter:image" content="https://gtmxagents.com/og.png" />
-		<meta name="twitter:image:alt" content="GTMX Agents — agents that run your fundraise" />
+		<meta name="twitter:image:alt" content="Company — GTMX Agents" />
 
 		<!-- The ONE webfont on this site: Space Grotesk, display only — headlines,
 		     stat figures, buttons and nav (see the type notes in src/index.css).
@@ -92,12 +92,15 @@
 		<script type="application/ld+json">
 			{
 				"@context": "https://schema.org",
-				"@type": "Organization",
-				"name": "GTMX Agents",
-				"url": "https://gtmxagents.com/",
-				"logo": "https://gtmxagents.com/favicon.svg",
-				"image": "https://gtmxagents.com/og.png",
-				"description": "GTMX Agents runs sourcing-in-reverse for founders — investor matching, outreach orchestration, conversation tracking and diligence prep across 5,913 investor firms."
+				"@type": "WebPage",
+				"name": "Company — GTMX Agents",
+				"url": "https://gtmxagents.com/company",
+				"description": "GTMX Agents was incubated within GTMX Ventures. How we work, what we commit to, and who builds the product.",
+				"isPartOf": {
+					"@type": "WebSite",
+					"name": "GTMX Agents",
+					"url": "https://gtmxagents.com/"
+				}
 			}
 		</script>
 	</head>
@@ -107,14 +110,12 @@
 			     crawlers and text-mode readers a real H1 + value prop instead of an
 			     empty div. Kept inside #root so React's hydration replaces it. -->
 			<noscript>
-				<h1>Agents run the raise.</h1>
+				<h1>Built inside a venture studio, for the founders raising.</h1>
 				<p>
-					GTMX Agents runs sourcing-in-reverse for founders: investor matching, outreach
-					orchestration, conversation tracking and diligence prep — across 5,913 investor firms
-					and 22,338 named partners.
+					GTMX Agents was incubated within GTMX Ventures. The agents work for the company raising, every published figure is a live count, and a person approves what enters the investor database.
 				</p>
 			</noscript>
 		</div>
-		<script type="module" src="/src/main.tsx"></script>
+		<script type="module" src="/src/entries/company.tsx"></script>
 	</body>
 </html>
