@@ -30,6 +30,23 @@
 		"enabled": true
 	},
 
+	// Waitlist storage for POST /api/waitlist (worker/waitlist.ts).
+	//
+	// COMMENTED OUT DELIBERATELY. A kv_namespaces entry with a placeholder id
+	// fails `wrangler deploy` outright, and an entry pointing at a namespace that
+	// does not exist is worse — it deploys and then throws at runtime. Until the
+	// namespace is provisioned, the binding is simply absent and the handler
+	// answers 503, which is the honest state.
+	//
+	// To turn the waitlist on (one-time, needs Cloudflare API token "B"):
+	//   pnpm -C site exec wrangler kv namespace create WAITLIST
+	//   pnpm -C site exec wrangler kv namespace create WAITLIST --preview
+	// then paste the returned ids below and uncomment.
+	//
+	// "kv_namespaces": [
+	//   { "binding": "WAITLIST", "id": "<id>", "preview_id": "<preview_id>" }
+	// ],
+
 	"assets": {
 		// Must match vite.config.ts `build.outDir`.
 		"directory": "./dist",

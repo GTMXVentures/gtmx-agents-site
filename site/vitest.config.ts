@@ -25,7 +25,12 @@ export default defineConfig({
 		setupFiles: ["./tests/setup.ts"],
 		// Colocated tests only. `tests/` holds setup/helpers, not test files, so it
 		// is not in this glob.
-		include: ["src/**/__tests__/**/*.test.{ts,tsx}"],
+		//
+		// worker/ is included as well: the Worker is TypeScript we ship, and its
+		// request handlers are the only code here with real branching. They run
+		// under the same jsdom environment because they touch nothing but the
+		// standard Request/Response globals, which jsdom and workerd share.
+		include: ["src/**/__tests__/**/*.test.{ts,tsx}", "worker/**/__tests__/**/*.test.ts"],
 		exclude: ["node_modules", "dist", ".wrangler"],
 	},
 });

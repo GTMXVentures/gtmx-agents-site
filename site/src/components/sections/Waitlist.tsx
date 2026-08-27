@@ -4,14 +4,17 @@ import { PulseDot } from "@/components/PulseDot";
 /**
  * Waitlist — the only interactive element on the page.
  *
- * ⚠️ `/api/waitlist` DOES NOT EXIST YET. The Worker (site/worker/index.ts)
- * answers every `/api/*` path with a JSON 404 by design — that 404 is also the
- * canary that `assets.run_worker_first` is still routing API paths to the Worker
- * rather than to the asset server. So the failure branch below is the branch
- * that runs in production today, and it must degrade to something useful rather
- * than to a dead form: a mailto fallback. When the endpoint lands (see the
- * TODO(waitlist) in worker/index.ts) the success branch starts firing on its own
- * with no change here.
+ * `/api/waitlist` is implemented in site/worker/waitlist.ts. It answers 202 on
+ * success and 503 while the WAITLIST KV namespace is unprovisioned (see the
+ * commented kv_namespaces block in wrangler.jsonc) — so the failure branch below
+ * is still the branch that runs until that one-time setup happens, and it must
+ * keep degrading to something useful rather than to a dead form: a mailto
+ * fallback. Nothing here changes when the namespace lands; the success branch
+ * simply starts firing.
+ *
+ * Unmatched `/api/*` paths still return the Worker's JSON 404, which remains the
+ * canary that `assets.run_worker_first` routes API paths to the Worker rather
+ * than to the asset server.
  *
  * Every non-2xx AND every network/parse throw funnels into the same `error`
  * state on purpose — from the visitor's side "the server said no" and "the
