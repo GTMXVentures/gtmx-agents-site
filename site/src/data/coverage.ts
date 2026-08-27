@@ -11,16 +11,23 @@
  * illustrative placeholders. If they are refreshed, refresh this file — and
  * keep `reachablePartners` consistent with the definition in the footnote
  * rendered by the database section: a named partner with a verified email.
+ *
+ * ⚠️ COUNT LIVE ROWS ONLY. `firms` and `partners` are soft-deleted
+ * (`deleted_at`), never hard-deleted, so a bare `count(*)` includes records
+ * that were removed for being wrong — the ~1,120 people and operating
+ * companies quarantined after the 2026-08-04 bad-import incident among them.
+ * Every figure below is `… where deleted_at is null`, verified 2026-08-27.
+ * The previous values were raw row counts and overstated firms by 19%.
  */
 export const COVERAGE = {
 	/** Investor organisations: institutional VCs, growth funds, family offices. */
-	firms: 7033,
+	firms: 5913,
 	/** Named individuals attached to those firms. */
-	partners: 22402,
+	partners: 22338,
 	/** Partners with a verified email — i.e. contactable without an intro hunt. */
-	reachablePartners: 8959,
+	reachablePartners: 8930,
 	/** Firms with at least one named partner attached. */
-	firmsWithPartner: 4329,
+	firmsWithPartner: 4307,
 	/** Stages in the canonical deal room, outreach through closing. */
 	dealRoomStages: 13,
 	/** Of those stages, the ones that move a conversation forward. */
@@ -28,21 +35,21 @@ export const COVERAGE = {
 	/** …and the ones that record how a conversation ended. */
 	terminalStages: 4,
 
-	/* --- Composition of the 7,033, by the firm's own type ------------------
+	/* --- Composition of the 5,913, by the firm's own type ------------------
 	 * Counted from the `vc_type` column, which is a constrained vocabulary
 	 * rather than free text, so these are exact rather than approximate.
 	 *
 	 * They are SUBSETS, not a partition: VCs + family offices + angels come to
-	 * 4,197, and the remaining 2,836 are PE funds, accelerators, venture debt,
+	 * 4,076, and the remaining 1,837 are PE funds, accelerators, venture debt,
 	 * banks, and firms still awaiting a type. Presenting them as a breakdown
 	 * that sums to the total would be the easy lie here. */
 
 	/** Institutional venture funds — the core of the database. */
-	vcFunds: 3473,
+	vcFunds: 3370,
 	/** Single-family offices plus multi-family offices and wealth managers. */
-	familyOffices: 550,
+	familyOffices: 534,
 	/** Angel funds and syndicates, plus individually-listed angels. */
-	angels: 174,
+	angels: 172,
 } as const;
 
 export interface SectorCoverage {
