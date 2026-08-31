@@ -31,7 +31,7 @@ const CHANNELS = [
 ];
 
 export default function Contact(): ReactElement {
-	const { email, phone, address, legalName, registrationNumber, social } = COMPANY;
+	const { email, phone, address, legalName, registrationNumber, social, contactName } = COMPANY;
 	const socialLinks = [
 		{ id: "linkedin", label: "LinkedIn", href: social.linkedin },
 		{ id: "x", label: "X", href: social.x },
@@ -64,6 +64,11 @@ export default function Contact(): ReactElement {
 								<h2 className="font-display font-semibold text-ink text-lg tracking-[-0.02em]">
 									Reach us
 								</h2>
+								{contactName && (
+									<p className="mt-2 text-ink-muted text-sm leading-[1.6]">
+										{contactName} reads both, and replies.
+									</p>
+								)}
 								<dl className="mt-6 grid gap-6">
 									<div>
 										<dt className="font-mono text-[0.6875rem] text-ink-subtle uppercase tracking-[0.16em]">

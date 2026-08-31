@@ -44,10 +44,23 @@ describe.each(PAGES)("$name page", ({ Component, heading }) => {
 });
 
 describe("unset company facts are omitted, never stubbed", () => {
-	it("renders no phone link while COMPANY.phone is unset", () => {
-		expect(COMPANY.phone).toBeNull();
+	it("renders the phone as a dialable tel: link with spacing stripped", () => {
+		expect(COMPANY.phone).not.toBeNull();
 		const { container } = render(<Contact />);
-		expect(container.querySelector('a[href^="tel:"]')).toBeNull();
+		const tel = container.querySelector('a[href^="tel:"]');
+		expect(tel).not.toBeNull();
+		// Displayed with spaces for readability, dialled without: a tel: href
+		// containing spaces fails to dial on some Android handsets.
+		expect(tel?.getAttribute("href")).toMatch(/^tel:\+?\d+$/);
+		expect(tel?.textContent).toBe(COMPANY.phone);
+	});
+
+	it("attributes the contact details to a named person", () => {
+		// The page headline promises "Talk to a person"; this keeps that literal
+		// rather than a slogan sitting over an unattributed inbox.
+		expect(COMPANY.contactName).not.toBeNull();
+		render(<Contact />);
+		expect(screen.getByText(new RegExp(COMPANY.contactName as string))).toBeInTheDocument();
 	});
 
 	it("renders no address element while COMPANY.address is unset", () => {

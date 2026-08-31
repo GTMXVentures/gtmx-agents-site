@@ -46,11 +46,18 @@ export const COMPANY = {
 		readonly country: string;
 	} | null,
 
-	/** E.164, e.g. "+91 22 1234 5678". */
-	phone: null as string | null,
+	/** E.164 with spacing for readability; the tel: link strips non-digits. */
+	phone: "+91 60003 43356" as string | null,
 
-	/** General enquiries. This one IS known and is already in the footer. */
+	/** General enquiries. */
 	email: "kumar@gtmxagents.com",
+
+	/**
+	 * Who the email and phone reach. Rendered beside them so the contact page's
+	 * promise ("talk to a person") is literally true rather than a slogan over a
+	 * generic inbox. Null falls back to unattributed details.
+	 */
+	contactName: "Kumar Aditya" as string | null,
 
 	/** Year the company began operating. */
 	foundedYear: null as number | null,
