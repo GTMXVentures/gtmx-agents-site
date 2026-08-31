@@ -32,22 +32,30 @@
 
 	// Waitlist storage for POST /api/waitlist (worker/waitlist.ts).
 	//
-	// Rows go to Supabase, not KV: the team already operates Supabase and its
-	// dashboard is the read path. Nobody wants to run `wrangler kv key list` to
-	// find out who signed up.
+	// D1, not the product's Postgres: marketing data and application data have no
+	// reason to share a database, and this repo's rule is that product logic stays
+	// out of the marketing site. A native binding also means the Worker holds no
+	// credential — nothing to `wrangler secret put`, nothing to rotate, and a
+	// compromised marketing site cannot reach the product database.
 	//
-	// Both values are SECRETS, not vars — a var would be committed here in plain
-	// text. Set once per environment:
-	//   pnpm -C site exec wrangler secret put SUPABASE_URL
-	//   pnpm -C site exec wrangler secret put SUPABASE_PUBLISHABLE_KEY
+	// COMMENTED OUT DELIBERATELY. A d1_databases entry with a placeholder
+	// database_id fails `wrangler deploy`, and an id for a database that does not
+	// exist deploys and then throws at runtime. Until it is created the binding is
+	// absent and the handler answers 503, which is the honest state.
 	//
-	// SUPABASE_PUBLISHABLE_KEY must be the publishable/anon key. The service key
-	// would give this Worker read access to the whole product database; the
-	// publishable key is granted INSERT on one table and the table's RLS has no
-	// SELECT policy, so a leak costs junk rows rather than the signup list.
+	// To turn the waitlist on (one time):
+	//   pnpm -C site exec wrangler d1 create gtmx-agents-site
+	//        -> paste the printed database_id below and uncomment
+	//   pnpm -C site exec wrangler d1 migrations apply gtmx-agents-site --remote
 	//
-	// Until both are set the endpoint answers 503 and the form falls back to a
-	// mailto link, which is the behaviour it already had.
+	// "d1_databases": [
+	//   {
+	//     "binding": "WAITLIST_DB",
+	//     "database_name": "gtmx-agents-site",
+	//     "database_id": "<id printed by d1 create>",
+	//     "migrations_dir": "migrations"
+	//   }
+	// ],
 
 	"assets": {
 		// Must match vite.config.ts `build.outDir`.

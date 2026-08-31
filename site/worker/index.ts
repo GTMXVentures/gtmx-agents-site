@@ -19,16 +19,14 @@ export interface Env {
 	/** Static assets from ./dist, bound in wrangler.jsonc as `ASSETS`. */
 	ASSETS: Fetcher;
 	/**
-	 * Supabase credentials for the waitlist table. OPTIONAL on purpose: both are
-	 * set with `wrangler secret put`, so until someone does that they are
-	 * undefined and /api/waitlist answers 503 rather than pretending to store
-	 * addresses.
+	 * Waitlist storage. OPTIONAL on purpose: the database is created by hand
+	 * (see the commented d1_databases block in wrangler.jsonc), so until someone
+	 * does that this is undefined and /api/waitlist answers 503 rather than
+	 * pretending to store addresses.
 	 *
-	 * SUPABASE_PUBLISHABLE_KEY must be the publishable/anon key, never the
-	 * service key — see the RLS note in worker/waitlist.ts.
+	 * A native binding, so there is no credential here to set, rotate or leak.
 	 */
-	SUPABASE_URL?: string;
-	SUPABASE_PUBLISHABLE_KEY?: string;
+	WAITLIST_DB?: D1Database;
 }
 
 /**
@@ -80,11 +78,7 @@ export default {
 		// delivering them here; anything unmatched still falls through to the
 		// JSON 404 below, which remains the canary for the assets config.
 		if (url.pathname === "/api/waitlist") {
-			return handleWaitlist(request, {
-				supabaseUrl: env.SUPABASE_URL,
-				supabaseKey: env.SUPABASE_PUBLISHABLE_KEY,
-				fetch: globalThis.fetch,
-			});
+			return handleWaitlist(request, { db: env.WAITLIST_DB });
 		}
 
 		if (url.pathname === "/api" || url.pathname.startsWith("/api/")) {
