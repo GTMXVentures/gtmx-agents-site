@@ -19,12 +19,16 @@ export interface Env {
 	/** Static assets from ./dist, bound in wrangler.jsonc as `ASSETS`. */
 	ASSETS: Fetcher;
 	/**
-	 * Waitlist storage. OPTIONAL on purpose: the namespace is provisioned by
-	 * hand (see the commented kv_namespaces block in wrangler.jsonc), so until
-	 * someone runs that command this is undefined and /api/waitlist answers 503
-	 * rather than pretending to store addresses.
+	 * Supabase credentials for the waitlist table. OPTIONAL on purpose: both are
+	 * set with `wrangler secret put`, so until someone does that they are
+	 * undefined and /api/waitlist answers 503 rather than pretending to store
+	 * addresses.
+	 *
+	 * SUPABASE_PUBLISHABLE_KEY must be the publishable/anon key, never the
+	 * service key — see the RLS note in worker/waitlist.ts.
 	 */
-	WAITLIST?: KVNamespace;
+	SUPABASE_URL?: string;
+	SUPABASE_PUBLISHABLE_KEY?: string;
 }
 
 /**
@@ -76,7 +80,11 @@ export default {
 		// delivering them here; anything unmatched still falls through to the
 		// JSON 404 below, which remains the canary for the assets config.
 		if (url.pathname === "/api/waitlist") {
-			return handleWaitlist(request, { store: env.WAITLIST, now: () => new Date() });
+			return handleWaitlist(request, {
+				supabaseUrl: env.SUPABASE_URL,
+				supabaseKey: env.SUPABASE_PUBLISHABLE_KEY,
+				fetch: globalThis.fetch,
+			});
 		}
 
 		if (url.pathname === "/api" || url.pathname.startsWith("/api/")) {

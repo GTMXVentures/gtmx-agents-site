@@ -4,14 +4,23 @@
  * Split out of worker/index.ts so it can be unit-tested without constructing a
  * full Worker environment: every dependency arrives as an argument.
  *
+ * STORAGE
+ * Rows go to Supabase (`public.waitlist_signups`) over PostgREST, using the
+ * PUBLISHABLE key rather than the service key. That key is granted INSERT and
+ * nothing else, and the table's RLS has no SELECT policy — so the worst case
+ * for a leaked key is junk rows, never an exfiltrated signup list. Supabase was
+ * chosen over KV because the team already operates it and its dashboard is the
+ * read path; nobody wants to run `wrangler kv key list` to see who signed up.
+ *
  * RESPONSE CONTRACT
  * Every response is JSON (the /api/* rule from index.ts) and every non-2xx is
  * treated identically by the frontend, which falls back to a mailto link. So
  * status codes here are for operators reading logs, not for the UI:
- *   202  stored (or already present — see the note on idempotency below)
+ *   202  stored, or already present — deliberately indistinguishable
  *   400  malformed body or an address that is not plausibly an email
  *   405  wrong method
- *   503  the KV namespace is not bound yet (see wrangler.jsonc)
+ *   500  the upstream refused for a reason we did not anticipate
+ *   503  the Supabase credentials are not configured on this Worker
  */
 
 /** Cap on the request body. An email is well under 1 KB; anything larger is
@@ -33,11 +42,18 @@ const MAX_EMAIL_LENGTH = 254;
  */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@.]+(\.[^\s@.]+)+$/;
 
+/** Postgres unique-violation. PostgREST surfaces it as a 409 with this code. */
+const PG_UNIQUE_VIOLATION = "23505";
+
+const TABLE = "waitlist_signups";
+
 export interface WaitlistDeps {
-	/** KV namespace, or undefined when the binding has not been provisioned. */
-	store: KVNamespace | undefined;
-	/** Injected so tests get a deterministic timestamp. */
-	now: () => Date;
+	/** Supabase project URL, e.g. https://<ref>.supabase.co */
+	supabaseUrl: string | undefined;
+	/** Publishable/anon key. Must NOT be the service key. */
+	supabaseKey: string | undefined;
+	/** Injected so tests can stub the network. */
+	fetch: typeof globalThis.fetch;
 }
 
 const json = (body: unknown, status: number, headers: HeadersInit = {}): Response =>
@@ -56,7 +72,7 @@ export function isValidEmail(candidate: string): boolean {
 
 /** Lowercase + trim. Case is not significant for the domain and effectively
  *  never significant for the local part in practice, so normalising here is
- *  what makes the KV key idempotent across resubmissions. */
+ *  what makes the unique index do its job across resubmissions. */
 export function normaliseEmail(raw: string): string {
 	return raw.trim().toLowerCase();
 }
@@ -95,38 +111,58 @@ export async function handleWaitlist(request: Request, deps: WaitlistDeps): Prom
 		);
 	}
 
-	// The binding is intentionally absent until the namespace is provisioned —
-	// see the commented kv_namespaces block in wrangler.jsonc. Failing loudly
-	// with 503 beats silently accepting an address we then drop on the floor.
-	if (!deps.store) {
-		console.error("waitlist: WAITLIST KV binding is not configured; address not stored");
+	// Credentials are set with `wrangler secret put`, so a fresh environment has
+	// none. Failing loudly beats accepting an address we then drop on the floor.
+	if (!deps.supabaseUrl || !deps.supabaseKey) {
+		console.error("waitlist: SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY not configured");
 		return json({ error: "unavailable", message: "Waitlist is not accepting signups yet." }, 503);
 	}
 
-	// Key on the address so a resubmission overwrites rather than duplicating.
-	// `first_seen` is preserved on rewrite so we keep the original signup time.
-	const key = `email:${email}`;
-	const nowIso = deps.now().toISOString();
-	const existing = await deps.store.get(key);
-	const firstSeen = existing
-		? ((JSON.parse(existing) as { first_seen?: string }).first_seen ?? nowIso)
-		: nowIso;
+	let upstream: Response;
+	try {
+		upstream = await deps.fetch(`${deps.supabaseUrl}/rest/v1/${TABLE}`, {
+			method: "POST",
+			headers: {
+				apikey: deps.supabaseKey,
+				authorization: `Bearer ${deps.supabaseKey}`,
+				"content-type": "application/json",
+				// return=minimal: we have no SELECT privilege and do not want the row
+				// back. Note we deliberately do NOT send
+				// `resolution=ignore-duplicates` — PostgREST implements that as ON
+				// CONFLICT, which requires SELECT on the table, and granting SELECT
+				// would make the signup list enumerable with the same key. The
+				// duplicate is handled below instead.
+				prefer: "return=minimal",
+			},
+			body: JSON.stringify({
+				email,
+				// Cloudflare adds this to the incoming request; useful for cohort
+				// planning and costs nothing. Absent locally and in tests.
+				country: request.headers.get("cf-ipcountry") ?? null,
+				user_agent: request.headers.get("user-agent")?.slice(0, 300) ?? null,
+			}),
+		});
+	} catch (cause) {
+		console.error("waitlist: upstream request failed", cause);
+		return json({ error: "upstream_unreachable", message: "Could not record the signup." }, 502);
+	}
 
-	await deps.store.put(
-		key,
-		JSON.stringify({
-			email,
-			first_seen: firstSeen,
-			last_seen: nowIso,
-			// Cloudflare adds this on the incoming request; useful for cohort
-			// planning and costs nothing. Absent in `wrangler dev` and in tests.
-			country: request.headers.get("cf-ipcountry") ?? null,
-		}),
-	);
+	if (upstream.ok) {
+		// 202, not 201: the address is accepted, but "on the waitlist" completes
+		// later when a human sends the invite.
+		return json({ status: "accepted" }, 202);
+	}
 
-	// 202, not 201: we have accepted the address, but "on the waitlist" is a
-	// process that completes later (a human sends the invite). Also identical
-	// for a first submission and a repeat, so the response never discloses
-	// whether a given address is already registered.
-	return json({ status: "accepted" }, 202);
+	// A repeat signup is a 409 unique violation. Answer exactly as for a first
+	// signup — partly because it is true from the visitor's side, and partly so
+	// the endpoint never discloses whether a given address is already on the list.
+	if (upstream.status === 409) {
+		const body = (await upstream.json().catch(() => null)) as { code?: string } | null;
+		if (body?.code === PG_UNIQUE_VIOLATION) {
+			return json({ status: "accepted" }, 202);
+		}
+	}
+
+	console.error(`waitlist: upstream ${upstream.status}`, await upstream.text().catch(() => ""));
+	return json({ error: "upstream_error", message: "Could not record the signup." }, 500);
 }

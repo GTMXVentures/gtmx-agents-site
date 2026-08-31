@@ -32,20 +32,22 @@
 
 	// Waitlist storage for POST /api/waitlist (worker/waitlist.ts).
 	//
-	// COMMENTED OUT DELIBERATELY. A kv_namespaces entry with a placeholder id
-	// fails `wrangler deploy` outright, and an entry pointing at a namespace that
-	// does not exist is worse — it deploys and then throws at runtime. Until the
-	// namespace is provisioned, the binding is simply absent and the handler
-	// answers 503, which is the honest state.
+	// Rows go to Supabase, not KV: the team already operates Supabase and its
+	// dashboard is the read path. Nobody wants to run `wrangler kv key list` to
+	// find out who signed up.
 	//
-	// To turn the waitlist on (one-time, needs Cloudflare API token "B"):
-	//   pnpm -C site exec wrangler kv namespace create WAITLIST
-	//   pnpm -C site exec wrangler kv namespace create WAITLIST --preview
-	// then paste the returned ids below and uncomment.
+	// Both values are SECRETS, not vars — a var would be committed here in plain
+	// text. Set once per environment:
+	//   pnpm -C site exec wrangler secret put SUPABASE_URL
+	//   pnpm -C site exec wrangler secret put SUPABASE_PUBLISHABLE_KEY
 	//
-	// "kv_namespaces": [
-	//   { "binding": "WAITLIST", "id": "<id>", "preview_id": "<preview_id>" }
-	// ],
+	// SUPABASE_PUBLISHABLE_KEY must be the publishable/anon key. The service key
+	// would give this Worker read access to the whole product database; the
+	// publishable key is granted INSERT on one table and the table's RLS has no
+	// SELECT policy, so a leak costs junk rows rather than the signup list.
+	//
+	// Until both are set the endpoint answers 503 and the form falls back to a
+	// mailto link, which is the behaviour it already had.
 
 	"assets": {
 		// Must match vite.config.ts `build.outDir`.

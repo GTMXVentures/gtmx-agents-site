@@ -21,7 +21,7 @@ reputation surface with the Workspace primary domain).
 site/                 deployable unit
   wrangler.jsonc      Worker + static-asset config (assets → ./dist)
   worker/index.ts     Worker entry: www→apex 301, /api/* routing, ASSETS passthrough
-  worker/waitlist.ts  POST /api/waitlist — validate + persist to KV
+  worker/waitlist.ts  POST /api/waitlist — validate + insert into Supabase
   vite.config.ts      prod bundler (multi-page `input`)  vitest.config.ts  tests
   index.html          home; product|company|contact/index.html are the other routes
                       ALL SEO/OG/JSON-LD is static, per route, in these files
@@ -102,10 +102,19 @@ If `pulumi refresh && pulumi preview` shows a recurring diff, assume an ownershi
 - `/api/waitlist` is implemented (`worker/waitlist.ts`); other `/api/*` paths return a JSON
   404. Getting **HTML** back from any `/api/*` path is the canonical symptom that
   `run_worker_first` is misconfigured.
-- The `WAITLIST` KV binding is **commented out** in `wrangler.jsonc` until the namespace is
-  provisioned; until then the endpoint answers 503 and the form falls back to a mailto link.
-  A placeholder id fails `wrangler deploy`; an id for a namespace that does not exist deploys
-  and then throws at runtime.
+- Waitlist signups go to **Supabase** (`public.waitlist_signups`), not KV — the team already
+  operates Supabase and its dashboard is the read path. `SUPABASE_URL` and
+  `SUPABASE_PUBLISHABLE_KEY` are **secrets** (`wrangler secret put`), never vars; until both
+  are set the endpoint answers 503 and the form falls back to a mailto link.
+- **Never put the service key in this Worker.** The publishable key is granted `INSERT` on that
+  one table and the table's RLS has no `SELECT` policy, so a leak costs junk rows rather than
+  the signup list. The service key would give the marketing site read access to the whole
+  product database.
+- Do **not** add `Prefer: resolution=ignore-duplicates` to the insert. PostgREST implements it
+  as `ON CONFLICT`, which requires `SELECT` on the table — granting that would make the signup
+  list enumerable with the same key. A repeat signup surfaces as a 409 with Postgres code
+  `23505` and the handler maps it to the same 202 a first signup gets, which also stops the
+  endpoint disclosing whether an address is already registered. There is a test for this.
 - **Open issue — the www→apex 301 is currently a no-op for page views.** `run_worker_first`
   only routes `/api/*` to the Worker, so `www.gtmxagents.com/anything` is answered by the
   asset server with a 200 instead of redirecting (verified locally with `wrangler dev`).
