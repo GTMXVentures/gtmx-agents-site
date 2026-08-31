@@ -50,6 +50,11 @@ export const COVERAGE = {
 	familyOffices: 534,
 	/** Angel funds and syndicates, plus individually-listed angels. */
 	angels: 172,
+
+	/** Firms with no usable sector or stage — no industries, only "Others", or no
+	 *  stage recorded. These are excluded from matches rather than guessed at, so
+	 *  this is the honest size of the coverage gap. */
+	untagged: 982,
 } as const;
 
 export interface SectorCoverage {

@@ -7,8 +7,9 @@ imports should live in `src/` instead so it gets a content hash.
 | File | Purpose |
 | --- | --- |
 | `robots.txt` | Allow-all + absolute `Sitemap:` line |
-| `sitemap.xml` | Single URL (`https://gtmxagents.com/`); hand-maintained |
-| `favicon.svg` | Placeholder "G" mark, referenced from `index.html` and the JSON-LD `logo` |
+| `sitemap.xml` | Four routes; hand-maintained — add a `<url>` per new route |
+| `favicon.svg` | Placeholder "G" mark, referenced from every route's HTML and the JSON-LD `logo` |
+| `og.png` | 1200×630 social card; see the note below |
 | `.assetsignore` | Copied to `dist/`, read by wrangler — keeps **this file** off the live site |
 
 `this file` is why `.assetsignore` exists: without it, an internal note would be readable at
@@ -16,24 +17,20 @@ imports should live in `src/` instead so it gets a content hash.
 `WRANGLER_LOG=debug pnpm exec wrangler deploy --dry-run | grep "Ignoring asset"` →
 `.assetsignore` and `README.md` must both be listed.
 
-## ⚠️ Required before launch: `og.png`
+## `og.png`
 
-**`public/og.png` does not exist yet** — it is a binary and was deliberately not committed by
-the scaffold agent. `index.html` already references
-`https://gtmxagents.com/og.png` from `og:image`, `og:image:secure_url` and `twitter:image`,
-with `og:image:width=1200` / `og:image:height=630` declared.
+**Present since 2026-08-31.** 1200 × 630 PNG, dark ground matching
+`--color-background`, text kept inside the middle ~80% so LinkedIn and WhatsApp
+crops do not clip it. Referenced from `og:image`, `og:image:secure_url` and
+`twitter:image` in every route's HTML.
 
-Until the file exists, every link preview (LinkedIn, Slack, WhatsApp, X, iMessage) renders as
-a **broken/blank card**. Requirements:
+Before this existed, `/og.png` was answered by the SPA fallback with
+`content-type: text/html`, so every link preview rendered as a blank card —
+verify any replacement with `curl -sI https://gtmxagents.com/og.png` and expect
+`200` + `content-type: image/png`, not just a 200.
 
-- **Exactly 1200 × 630 px**, PNG (that is the ratio all major unfurlers crop to).
-- Keep text inside the middle ~80% — LinkedIn and WhatsApp crop the edges.
-- Under ~1 MB; several crawlers give up on slow or oversized images.
-- Dark background matching `--color-background` (`#0b0d12`) so it does not flash white.
+The figures on the card are baked in at render time and will drift from
+`src/data/coverage.ts`. Regenerate it when those numbers move materially.
 
-Verify after deploy with the LinkedIn Post Inspector and `curl -sI https://gtmxagents.com/og.png`
-(expect `200` + `content-type: image/png`). Note that unfurlers cache aggressively — replacing
-the image later may require a re-scrape in their tooling.
-
-An `apple-touch-icon.png` (180 × 180) is also worth adding eventually; `index.html` currently
-points `apple-touch-icon` at the SVG, which older iOS ignores.
+An `apple-touch-icon.png` (180 × 180) is still worth adding; `index.html`
+currently points `apple-touch-icon` at the SVG, which older iOS ignores.

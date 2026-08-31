@@ -16,6 +16,21 @@ import { COMPANY } from "@/data/company";
 
 const PRINCIPLES = [
 	{
+		id: "agentic",
+		title: "Agents that act, not a chatbot that answers",
+		body: "A model that explains fundraising is worth very little to a founder mid-raise. The bar we hold is whether an agent completes the job unattended and hands back something usable — a ranked list, a drafted sequence, a prepared data room — and stops where a human should decide.",
+	},
+	{
+		id: "approval",
+		title: "Autonomy with an explicit boundary",
+		body: "Every agent has a defined point where it stops. Nothing reaches an investor without founder approval, and no agent writes to the investor record without review. Autonomy without a stated boundary is not a feature, it is an unaudited actor.",
+	},
+	{
+		id: "grounding",
+		title: "Grounded in a maintained record",
+		body: "Agents fail expensively on stale inputs — they act confidently on something wrong. So the investor database is treated as the product, not the substrate: continuously refreshed, deduplicated against itself, and reviewed by a person before anything is promoted.",
+	},
+	{
 		id: "side",
 		title: "The agents work for the company raising",
 		body: "Not for the funds. Founder data is not sold, brokered, or surfaced to investors as a product. The alignment only works in one direction and we would rather state it than imply it.",
@@ -24,11 +39,6 @@ const PRINCIPLES = [
 		id: "data",
 		title: "Counted, not estimated",
 		body: "Every figure published on this site is a live count from the database behind the product. Where a number cannot be counted honestly, it is not shown — a pre-launch product quoting benchmarks it has not measured is the fastest way to lose the audience it wants.",
-	},
-	{
-		id: "review",
-		title: "A person approves what goes into the database",
-		body: "No automated source writes to the live investor database directly. Records queue for human review before promotion, because the cost of one wrong record reaching a founder's target list is much higher than the cost of reviewing it.",
 	},
 ];
 
@@ -46,13 +56,14 @@ export default function Company(): ReactElement {
 							id="company-heading"
 							className="mt-5 max-w-4xl text-balance font-display font-bold text-[clamp(2.25rem,5.5vw,3.75rem)] text-ink leading-[1] tracking-[-0.03em]"
 						>
-							Built inside a venture studio, for the founders raising.
+							We are building the agents we needed ourselves.
 						</h1>
 						<p className="mt-7 max-w-2xl text-ink-muted text-lg leading-[1.7]">
-							GTMX Agents was incubated within GTMX Ventures. The studio runs fundraising processes
-							for its own portfolio, which is where the product came from: the same investor
-							research, the same outreach, and the same cold threads, rebuilt as software instead of
-							spreadsheets.
+							GTMX Agents was incubated within GTMX Ventures. The studio runs fundraising for its
+							own portfolio, which is where the product came from: the same investor research, the
+							same outreach, the same threads going cold — first rebuilt as software, then handed to
+							agents once models became good enough to do the judgement-heavy parts rather than just
+							the typing.
 						</p>
 						{(legalName || foundedYear) && (
 							<dl className="mt-10 flex flex-wrap gap-x-12 gap-y-4">
@@ -91,11 +102,15 @@ export default function Company(): ReactElement {
 							id="principles-heading"
 							className="mt-5 max-w-3xl text-balance font-display font-bold text-[clamp(1.75rem,4vw,2.75rem)] text-ink leading-[1.05] tracking-[-0.03em]"
 						>
-							Three commitments that shape the product.
+							Five commitments that shape the product.
 						</h2>
+						<p className="mt-6 max-w-2xl text-ink-muted leading-[1.7]">
+							Most of these are about restraint. The interesting question with agents is not what
+							they can be made to do — it is where they are made to stop.
+						</p>
 					</Reveal>
 
-					<div className="mt-14 grid gap-x-12 gap-y-12 sm:grid-cols-3">
+					<div className="mt-14 grid gap-x-12 gap-y-12 sm:grid-cols-2">
 						{PRINCIPLES.map((p) => (
 							<Reveal key={p.id}>
 								<article className="border-line border-t pt-6">

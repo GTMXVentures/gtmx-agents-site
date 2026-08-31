@@ -42,26 +42,34 @@ const PIPELINE = [
 	},
 ];
 
-const CAPABILITIES = [
+const AGENTS = [
 	{
-		id: "match",
-		title: "Matching, not searching",
-		body: `Describe the company and the round. Firms are ranked against your thesis, stage and sector using semantic matching over each fund's own published thesis — not a keyword filter over ${formatCount(COVERAGE.firms)} rows that returns everything and ranks nothing.`,
+		id: "sourcing",
+		name: "Sourcing agent",
+		does: "Builds the target list",
+		body: `Reads the company and the round, then ranks funds against each one's own published thesis rather than a keyword filter over ${formatCount(COVERAGE.firms)} rows. Returns a prioritised matrix with the lead decision-maker named at every firm.`,
+		autonomy: "Runs unattended. You approve the list, not each lookup.",
 	},
 	{
-		id: "reach",
-		title: "The named partner, not the info@ address",
-		body: `${formatCount(COVERAGE.reachablePartners)} partners across ${formatCount(COVERAGE.firmsWithPartner)} firms have a named individual with a verified email attached, so a target list arrives with a person on it rather than a contact form.`,
+		id: "outreach",
+		name: "Outreach agent",
+		does: "Writes the approaches",
+		body: `Synthesises a partner's portfolio, recent writing and active mandates into an approach specific to them, and sequences sends in waves. ${formatCount(COVERAGE.reachablePartners)} partners across ${formatCount(COVERAGE.firmsWithPartner)} firms are reachable by name and verified email.`,
+		autonomy: "Drafts autonomously; nothing sends without founder approval.",
 	},
 	{
-		id: "track",
-		title: "One state across every inbox",
-		body: `Conversations are tracked across email and LinkedIn into ${COVERAGE.dealRoomStages} canonical deal stages — ${COVERAGE.advancingStages} that move a round forward and ${COVERAGE.terminalStages} that record how it ended — so a warm thread cannot go quiet unnoticed.`,
+		id: "conversations",
+		name: "Conversation agent",
+		does: "Keeps the pipeline true",
+		body: `Watches email and LinkedIn threads and maintains one state per fund, mapping every live dialogue onto ${COVERAGE.dealRoomStages} canonical deal stages — ${COVERAGE.advancingStages} that advance a round and ${COVERAGE.terminalStages} that record how it ended.`,
+		autonomy: "Runs continuously. Surfaces what needs a reply rather than waiting to be asked.",
 	},
 	{
-		id: "prep",
-		title: "Diligence prepared before it is asked for",
-		body: "The requests a fund makes at your stage are predictable. Financials, cohort data and the narrative gaps a partner will probe are structured ahead of the meeting rather than assembled during it.",
+		id: "diligence",
+		name: "Diligence agent",
+		does: "Prepares the answers",
+		body: "Anticipates what a fund asks at your stage, structures the financial and cohort data behind it, and flags the narrative gaps a partner will probe before the meeting rather than during it.",
+		autonomy: "Works ahead of the calendar, not in response to a request.",
 	},
 ];
 
@@ -77,12 +85,14 @@ export default function Product(): ReactElement {
 							id="product-heading"
 							className="mt-5 max-w-4xl text-balance font-display font-bold text-[clamp(2.25rem,5.5vw,3.75rem)] text-ink leading-[1] tracking-[-0.03em]"
 						>
-							An investor database, and agents that work it.
+							Four agents run the raise. You approve the decisions.
 						</h1>
 						<p className="mt-7 max-w-2xl text-ink-muted text-lg leading-[1.7]">
-							Two things, and the second depends entirely on the first. A maintained record of who
-							invests, at what stage, in what, and who at the firm decides — and a set of agents
-							that turn that record into a shortlist, an approach, and a tracked conversation.
+							Not a database with a search box, and not a chatbot that answers questions about
+							fundraising. Four agents that each own a job a founder currently does by hand —
+							sourcing, outreach, conversation tracking, diligence prep — running against a
+							maintained record of who actually invests, and stopping at every point a human should
+							decide.
 						</p>
 					</Reveal>
 				</div>
@@ -96,23 +106,32 @@ export default function Product(): ReactElement {
 			>
 				<div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-28">
 					<Reveal>
-						<p className="eyebrow">What it does</p>
+						<p className="eyebrow">The agent team</p>
 						<h2
 							id="capabilities-heading"
 							className="mt-5 max-w-3xl text-balance font-display font-bold text-[clamp(1.75rem,4vw,2.75rem)] text-ink leading-[1.05] tracking-[-0.03em]"
 						>
-							Four jobs a founder otherwise does by hand.
+							The agents, and where each one stops.
 						</h2>
+						<p className="mt-6 max-w-2xl text-ink-muted leading-[1.7]">
+							Autonomy is only useful if the boundary is explicit. Each agent works unattended up to
+							a defined point and then hands back — the list before it is worked, the drafts before
+							they send.
+						</p>
 					</Reveal>
 
 					<div className="mt-14 grid gap-x-12 gap-y-12 sm:grid-cols-2">
-						{CAPABILITIES.map((c) => (
-							<Reveal key={c.id}>
-								<article>
-									<h3 className="font-display font-semibold text-ink text-xl tracking-[-0.02em]">
-										{c.title}
+						{AGENTS.map((a) => (
+							<Reveal key={a.id}>
+								<article className="border-line border-t pt-6">
+									<p className="font-mono text-[0.6875rem] text-accent uppercase tracking-[0.16em]">
+										{a.name}
+									</p>
+									<h3 className="mt-4 font-display font-semibold text-ink text-xl tracking-[-0.02em]">
+										{a.does}
 									</h3>
-									<p className="mt-3 text-ink-muted leading-[1.7]">{c.body}</p>
+									<p className="mt-3 text-ink-muted leading-[1.7]">{a.body}</p>
+									<p className="mt-4 text-ink-subtle text-sm leading-[1.6]">{a.autonomy}</p>
 								</article>
 							</Reveal>
 						))}
@@ -124,16 +143,18 @@ export default function Product(): ReactElement {
 			<section aria-labelledby="pipeline-heading" className="border-line border-t bg-mantle">
 				<div className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-28">
 					<Reveal>
-						<p className="eyebrow">How the data is built</p>
+						<p className="eyebrow">What the agents read from</p>
 						<h2
 							id="pipeline-heading"
 							className="mt-5 max-w-3xl text-balance font-display font-bold text-[clamp(1.75rem,4vw,2.75rem)] text-ink leading-[1.05] tracking-[-0.03em]"
 						>
-							The database is the product. It is maintained, not scraped once.
+							An agent is only as good as what it reads from.
 						</h2>
 						<p className="mt-6 max-w-2xl text-ink-muted leading-[1.7]">
-							Investor data decays — funds close, partners move, mandates change. Four stages run
-							continuously, and the last one has a person in it.
+							The failure mode of an agent on bad data is not that it stalls — it is that it acts
+							confidently on something wrong, and you find out in a partner meeting. Investor data
+							decays constantly: funds close, partners move, mandates change. Four stages run
+							continuously to keep ahead of it, and the last one has a person in it.
 						</p>
 					</Reveal>
 

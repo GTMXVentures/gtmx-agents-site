@@ -62,10 +62,33 @@ export const COMPANY = {
 	},
 
 	/**
-	 * The people behind it. An empty array renders the section's "not published
-	 * yet" state rather than an empty grid — see the comment in Company.tsx.
+	 * The people behind it. An empty array omits the section entirely.
+	 *
+	 * Bios are deliberately scoped to what each person does here — no career
+	 * history, no prior employers, no adjectives. Anything beyond that is theirs
+	 * to write, and inventing it would be worse than the current brevity.
+	 * `linkedin` is null until each person supplies their own URL.
 	 */
-	team: [] as readonly TeamMember[],
+	team: [
+		{
+			name: "Saurabh Lahoti",
+			role: "Founder",
+			bio: "Sets product direction and runs the founder conversations the roadmap is built from.",
+			linkedin: null,
+		},
+		{
+			name: "Raman Shrivastava",
+			role: "Chief Technology Officer",
+			bio: "Owns the platform the agents run on — infrastructure, deployment and the data systems underneath.",
+			linkedin: null,
+		},
+		{
+			name: "Kumar Aditya",
+			role: "Product",
+			bio: "Built the investor database and the pipeline that keeps it current.",
+			linkedin: null,
+		},
+	] as readonly TeamMember[],
 } as const;
 
 /** True when there is enough to render a meaningful contact block. */

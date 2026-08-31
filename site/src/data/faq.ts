@@ -12,12 +12,13 @@ export interface FaqItem {
 	readonly answer: string;
 }
 
+import { COVERAGE, formatCount } from "@/data/coverage";
+
 export const FAQS: readonly FaqItem[] = [
 	{
 		id: "different",
 		question: "How is this different from a list of investors?",
-		answer:
-			"A list tells you a fund exists. The agents tell you whether it invests at your stage in your sector, who at that fund to write to, and what happened the last time you wrote. 8,959 of the 22,402 partners on file have a verified email, so the shortlist is a list of people you can actually reach.",
+		answer: `A list tells you a fund exists. The agents tell you whether it invests at your stage in your sector, who at that fund to write to, and what happened the last time you wrote. ${formatCount(COVERAGE.reachablePartners)} of the ${formatCount(COVERAGE.partners)} partners on file have a verified email, so the shortlist is a list of people you can actually reach.`,
 	},
 	{
 		id: "send",
@@ -34,8 +35,7 @@ export const FAQS: readonly FaqItem[] = [
 	{
 		id: "coverage",
 		question: "What is the database thin on?",
-		answer:
-			"Growth and late-stage mandates, and angels. There are 3,473 VC funds against 550 family offices and 174 angels, and 975 firms still have no sector or stage recorded. Untagged firms are left out of matches rather than guessed at, so a thin sector shows up as a small number rather than a bad match.",
+		answer: `Growth and late-stage mandates, and angels. There are ${formatCount(COVERAGE.vcFunds)} VC funds against ${formatCount(COVERAGE.familyOffices)} family offices and ${formatCount(COVERAGE.angels)} angels, and ${formatCount(COVERAGE.untagged)} firms still have no sector or stage recorded. Untagged firms are left out of matches rather than guessed at, so a thin sector shows up as a small number rather than a bad match.`,
 	},
 	{
 		id: "stage",
