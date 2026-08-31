@@ -48,14 +48,18 @@
 	//        -> paste the printed database_id below and uncomment
 	//   pnpm -C site exec wrangler d1 migrations apply gtmx-agents-site --remote
 	//
-	// "d1_databases": [
-	//   {
-	//     "binding": "WAITLIST_DB",
-	//     "database_name": "gtmx-agents-site",
-	//     "database_id": "<id printed by d1 create>",
-	//     "migrations_dir": "migrations"
-	//   }
-	// ],
+	// The binding name is WAITLIST_DB, not the `gtmx_agents_site` wrangler
+	// suggests: the code reads env.WAITLIST_DB, and naming a binding after the
+	// database rather than its role means a second D1 later forces a rename here
+	// and in every call site.
+	"d1_databases": [
+		{
+			"binding": "WAITLIST_DB",
+			"database_name": "gtmx-agents-site",
+			"database_id": "a33dba4b-957f-4b21-8f32-ffbd1283f836",
+			"migrations_dir": "migrations"
+		}
+	],
 
 	"assets": {
 		// Must match vite.config.ts `build.outDir`.
