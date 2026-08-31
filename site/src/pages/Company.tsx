@@ -148,16 +148,15 @@ export default function Company(): ReactElement {
 										<h3 className="font-display font-semibold text-ink text-lg tracking-[-0.02em]">
 											{member.name}
 										</h3>
-										<p className="mt-1 font-mono text-[0.6875rem] text-accent uppercase tracking-[0.16em]">
+										<p className="mt-2 font-mono text-[0.6875rem] text-accent uppercase tracking-[0.16em]">
 											{member.role}
 										</p>
-										<p className="mt-3 text-ink-muted leading-[1.7]">{member.bio}</p>
 										{member.linkedin && (
 											<a
 												href={member.linkedin}
 												rel="noreferrer noopener"
 												target="_blank"
-												className="mt-4 inline-block font-display font-medium text-ink-muted text-sm transition-colors duration-200 hover:text-ink"
+												className="mt-3 inline-block font-display font-medium text-ink-muted text-sm transition-colors duration-200 hover:text-ink"
 											>
 												LinkedIn →
 											</a>

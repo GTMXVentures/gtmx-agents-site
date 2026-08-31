@@ -23,8 +23,6 @@
 export interface TeamMember {
 	readonly name: string;
 	readonly role: string;
-	/** One or two sentences. Concrete background beats adjectives. */
-	readonly bio: string;
 	readonly linkedin: string | null;
 }
 
@@ -71,28 +69,25 @@ export const COMPANY = {
 	/**
 	 * The people behind it. An empty array omits the section entirely.
 	 *
-	 * Bios are deliberately scoped to what each person does here — no career
-	 * history, no prior employers, no adjectives. Anything beyond that is theirs
-	 * to write, and inventing it would be worse than the current brevity.
+	 * Name and designation only. Bios were dropped deliberately: a one-line
+	 * summary of someone's role reads as filler next to the title that already
+	 * says it, and a longer one is theirs to write, not ours to invent.
 	 * `linkedin` is null until each person supplies their own URL.
 	 */
 	team: [
 		{
 			name: "Saurabh Lahoti",
 			role: "Founder",
-			bio: "Sets product direction and runs the founder conversations the roadmap is built from.",
 			linkedin: null,
 		},
 		{
 			name: "Raman Shrivastava",
 			role: "Chief Technology Officer",
-			bio: "Owns the platform the agents run on — infrastructure, deployment and the data systems underneath.",
 			linkedin: null,
 		},
 		{
 			name: "Kumar Aditya",
 			role: "Product",
-			bio: "Built the investor database and the pipeline that keeps it current.",
 			linkedin: null,
 		},
 	] as readonly TeamMember[],
