@@ -13,9 +13,20 @@
  * run_worker_first has been broken (e.g. set to `true`).
  */
 
+import { handleWaitlist } from "./waitlist";
+
 export interface Env {
 	/** Static assets from ./dist, bound in wrangler.jsonc as `ASSETS`. */
 	ASSETS: Fetcher;
+	/**
+	 * Waitlist storage. OPTIONAL on purpose: the database is created by hand
+	 * (see the commented d1_databases block in wrangler.jsonc), so until someone
+	 * does that this is undefined and /api/waitlist answers 503 rather than
+	 * pretending to store addresses.
+	 *
+	 * A native binding, so there is no credential here to set, rotate or leak.
+	 */
+	WAITLIST_DB?: D1Database;
 }
 
 /**
@@ -63,9 +74,13 @@ export default {
 		// the asset server answered first — i.e. run_worker_first no longer
 		// matches /api/*.
 		//
-		// TODO(waitlist): add `if (url.pathname === "/api/waitlist" && request.method === "POST")`
-		// here — validate, persist (KV/D1/webhook), return 202. Keep it inside this
-		// prefix so run_worker_first keeps routing it.
+		// Routes are matched inside the /api/* prefix so run_worker_first keeps
+		// delivering them here; anything unmatched still falls through to the
+		// JSON 404 below, which remains the canary for the assets config.
+		if (url.pathname === "/api/waitlist") {
+			return handleWaitlist(request, { db: env.WAITLIST_DB });
+		}
+
 		if (url.pathname === "/api" || url.pathname.startsWith("/api/")) {
 			return Response.json(
 				{ error: "not_found", message: `No API route for ${url.pathname}` },

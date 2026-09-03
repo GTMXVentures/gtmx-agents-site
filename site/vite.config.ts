@@ -22,6 +22,21 @@ export default defineConfig({
 		outDir: "dist",
 		emptyOutDir: true,
 		rollupOptions: {
+			// Multi-page build: one HTML entry per route, each with its own static
+			// <head>. This is what keeps SEO static (see CLAUDE.md) now that routes
+			// have multiplied — a client-side router would render meta in JS, which
+			// unfurlers never execute. Cloudflare's asset server resolves /product
+			// to product/index.html, so no rewrite rule is needed.
+			//
+			// Adding a route means: an entry here, an HTML file, an entry module in
+			// src/entries/, a <url> in public/sitemap.xml, and a canonical tag in
+			// the new HTML. All five, or the page is invisible or misindexed.
+			input: {
+				main: path.resolve(import.meta.dirname, "index.html"),
+				product: path.resolve(import.meta.dirname, "product/index.html"),
+				company: path.resolve(import.meta.dirname, "company/index.html"),
+				contact: path.resolve(import.meta.dirname, "contact/index.html"),
+			},
 			output: {
 				// Content-hashed filenames for everything. This is what lets
 				// Cloudflare serve /assets/* with `immutable` long-lived caching:

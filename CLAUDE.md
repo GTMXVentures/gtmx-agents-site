@@ -4,10 +4,11 @@ Guidance for Claude Code (claude.ai/code) working in this repository.
 
 ## What this is
 
-The public landing page for **gtmxagents.com**, hosted on **Cloudflare Workers with static
-assets**. One route today. The GTMX agent product lives on GKE in a different repo and is out
-of scope here — do not add product/API logic to this site beyond the `/api/*` seam described
-below.
+The public marketing site for **gtmxagents.com**, hosted on **Cloudflare Workers with static
+assets**. Four routes: `/`, `/product`, `/company`, `/contact` — a multi-page Vite build, one
+HTML entry each, see ADR 0003. The GTMX agent product lives on GKE in a different repo and is
+out of scope here — do not add product/API logic to this site beyond the `/api/*` seam
+described below.
 
 Registrar is Hostinger; DNS is Cloudflare (Free plan). Email is a **Google Workspace domain
 alias** of gtmxventures.com — every existing user receives at and can send-as
@@ -19,9 +20,15 @@ reputation surface with the Workspace primary domain).
 ```
 site/                 deployable unit
   wrangler.jsonc      Worker + static-asset config (assets → ./dist)
-  worker/index.ts     Worker entry: www→apex 301, /api/* JSON 404 seam, ASSETS passthrough
-  vite.config.ts      prod bundler          vitest.config.ts  tests (separate on purpose)
-  index.html          ALL SEO/OG/JSON-LD lives here (static, single route)
+  worker/index.ts     Worker entry: www→apex 301, /api/* routing, ASSETS passthrough
+  worker/waitlist.ts  POST /api/waitlist — validate + insert into D1
+  migrations/         D1 schema; `wrangler d1 migrations apply`
+  vite.config.ts      prod bundler (multi-page `input`)  vitest.config.ts  tests
+  index.html          home; product|company|contact/index.html are the other routes
+                      ALL SEO/OG/JSON-LD is static, per route, in these files
+  src/pages/          one component per route      src/entries/  their mount modules
+  src/components/Shell.tsx   header/footer chrome shared by every route
+  src/data/company.ts        company facts; `null` means "do not publish"
   src/                React 19 + Tailwind v4; tokens in src/index.css @theme
 infra/                Pulumi Go: zone (imported), DNS, Worker custom domains
 docs/adr/             decision records — read before changing hosting or DNS ownership
@@ -68,8 +75,15 @@ If `pulumi refresh && pulumi preview` shows a recurring diff, assume an ownershi
   `--color-*` / `--font-*` entries in the `@theme` block of `site/src/index.css`, and values
   must be **literal hex** — `@theme` values are inlined into utilities, so `var()` /
   `color-mix()` there produce broken CSS.
-- **SEO is static.** Unfurlers (LinkedIn, Slack, X) do not run JS. Anything that must appear
-  in a preview card goes in `site/index.html`, never in React.
+- **SEO is static, per route.** Unfurlers (LinkedIn, Slack, X) do not run JS. Anything that
+  must appear in a preview card goes in that route's `index.html`, never in React. Adding a
+  route means five edits — `vite.config.ts` input, the HTML file, `src/entries/`,
+  `public/sitemap.xml`, and the new file's canonical tag. Miss the last two and the page is
+  invisible or misindexed.
+- **Never publish a company fact we do not have.** `src/data/company.ts` drives the footer and
+  the contact page; a `null` field renders *nothing* — no placeholder, no em dash, no "coming
+  soon". Tests in `src/pages/__tests__` enforce this. An invented address or phone number on a
+  page whose purpose is proving the company is real is a liability, not a stopgap.
 - **Tests**: Vitest in a separate `vitest.config.ts` so test-only plugins stay out of the
   production bundler. Tests colocate in `src/**/__tests__/*.test.tsx`.
 - **The `@` alias is declared in three places** — `tsconfig.json`, `vite.config.ts`,
@@ -86,8 +100,24 @@ If `pulumi refresh && pulumi preview` shows a recurring diff, assume an ownershi
   "fix" it by setting `true`.
 - `not_found_handling: "single-page-application"` is what makes deep links return the SPA
   shell with **200**. Removing it turns `/anything` into a 404.
-- The Worker's `/api/*` handler returns a JSON 404 today. Getting **HTML** back from
-  `/api/waitlist` is the canonical symptom that `run_worker_first` is misconfigured.
+- `/api/waitlist` is implemented (`worker/waitlist.ts`); other `/api/*` paths return a JSON
+  404. Getting **HTML** back from any `/api/*` path is the canonical symptom that
+  `run_worker_first` is misconfigured.
+- Waitlist signups go to **Cloudflare D1** (`waitlist_signups`), bound as `WAITLIST_DB`. Not
+  the product's Postgres: marketing data and application data have no reason to share a
+  database, and the rule at the top of this file is that product logic stays out of this site.
+- **A native binding means there is no credential here** — nothing to `wrangler secret put`,
+  nothing to rotate, and a compromised marketing Worker cannot reach the product database even
+  in principle. Keep it that way; if a future feature seems to need a Supabase key in this
+  Worker, that feature probably belongs in the product repo.
+- The `d1_databases` block is **commented out** in `wrangler.jsonc` until the database is
+  created; until then the endpoint answers 503 and the form falls back to a mailto link. A
+  placeholder `database_id` fails `wrangler deploy`; an id for a database that does not exist
+  deploys and then throws at runtime.
+- The insert uses `ON CONFLICT(email) DO NOTHING` and **never reads the table**. A read would
+  make the endpoint an oracle for whether a given address is on the list; the conflict clause
+  keeps a resubmission a silent no-op, and both first and repeat signups return the same 202.
+  There is a test asserting the statement contains no SELECT.
 - **Open issue — the www→apex 301 is currently a no-op for page views.** `run_worker_first`
   only routes `/api/*` to the Worker, so `www.gtmxagents.com/anything` is answered by the
   asset server with a 200 instead of redirecting (verified locally with `wrangler dev`).

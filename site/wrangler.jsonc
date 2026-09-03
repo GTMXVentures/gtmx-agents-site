@@ -30,14 +30,59 @@
 		"enabled": true
 	},
 
+	// Waitlist storage for POST /api/waitlist (worker/waitlist.ts).
+	//
+	// D1, not the product's Postgres: marketing data and application data have no
+	// reason to share a database, and this repo's rule is that product logic stays
+	// out of the marketing site. A native binding also means the Worker holds no
+	// credential — nothing to `wrangler secret put`, nothing to rotate, and a
+	// compromised marketing site cannot reach the product database.
+	//
+	// COMMENTED OUT DELIBERATELY. A d1_databases entry with a placeholder
+	// database_id fails `wrangler deploy`, and an id for a database that does not
+	// exist deploys and then throws at runtime. Until it is created the binding is
+	// absent and the handler answers 503, which is the honest state.
+	//
+	// To turn the waitlist on (one time):
+	//   pnpm -C site exec wrangler d1 create gtmx-agents-site
+	//        -> paste the printed database_id below and uncomment
+	//   pnpm -C site exec wrangler d1 migrations apply gtmx-agents-site --remote
+	//
+	// The binding name is WAITLIST_DB, not the `gtmx_agents_site` wrangler
+	// suggests: the code reads env.WAITLIST_DB, and naming a binding after the
+	// database rather than its role means a second D1 later forces a rename here
+	// and in every call site.
+	"d1_databases": [
+		{
+			"binding": "WAITLIST_DB",
+			"database_name": "gtmx-agents-site",
+			"database_id": "a33dba4b-957f-4b21-8f32-ffbd1283f836",
+			"migrations_dir": "migrations"
+		}
+	],
+
 	"assets": {
 		// Must match vite.config.ts `build.outDir`.
 		"directory": "./dist",
 		// Binding name used in worker/index.ts as `env.ASSETS`.
 		"binding": "ASSETS",
-		// Deep links (/pricing, /nope/deep) return index.html with a 200 instead of
-		// a 404, which is what an SPA needs. Without this, everything but / 404s.
+		// Deep links (/nope/deep) return index.html with a 200 instead of a 404.
+		// NOTE: with real routes now present (product/, company/, contact/), this
+		// only applies to paths that match no entry — a genuine 404 is still
+		// answered with the home page, which is why /typo renders the home page
+		// rather than an error. Acceptable for a marketing site; revisit if a
+		// real 404 page is ever wanted.
 		"not_found_handling": "single-page-application",
+
+		// Serve /product directly rather than 307-ing to /product/.
+		//
+		// The default ("auto-trailing-slash") redirects /product -> /product/,
+		// which contradicts the canonical tag and the sitemap entry, both of
+		// which declare the slash-less form. That mismatch makes a crawler follow
+		// a redirect to a page whose canonical points back at the URL it was just
+		// redirected from. Dropping the slash makes the served URL, the canonical
+		// and the sitemap all agree on one spelling.
+		"html_handling": "drop-trailing-slash",
 		// MUST stay an ARRAY of path globs. `true` sends EVERY request — including
 		// hashed assets — through the Worker, which meters requests that would
 		// otherwise be free/unmetered. If a wrangler version rejects the array

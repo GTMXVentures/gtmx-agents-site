@@ -12,14 +12,14 @@
 			every link preview. Single route today, so there is nothing to make
 			dynamic; revisit prerendering only if routes multiply.
 		-->
-		<title>GTMX Agents — agents that run your fundraise</title>
+		<title>Product — GTMX Agents</title>
 		<meta
 			name="description"
-			content="Four agents run your raise: investor matching, outreach, conversation tracking and diligence prep, across 5,913 investor firms and 22,338 named partners."
+			content="The four agents — sourcing, outreach, conversations, diligence — what each does unattended, where each stops, and the investor record they work from."
 		/>
 		<!-- Absolute canonical: prevents the www host and any workers.dev preview URL
 		     from being indexed as duplicate content. -->
-		<link rel="canonical" href="https://gtmxagents.com/" />
+		<link rel="canonical" href="https://gtmxagents.com/product" />
 		<meta name="robots" content="index, follow" />
 
 		<!-- Open Graph. og:image must be an ABSOLUTE URL — several unfurlers do not
@@ -28,11 +28,11 @@
 		     image finishes downloading. -->
 		<meta property="og:type" content="website" />
 		<meta property="og:site_name" content="GTMX Agents" />
-		<meta property="og:url" content="https://gtmxagents.com/" />
-		<meta property="og:title" content="GTMX Agents — agents that run your fundraise" />
+		<meta property="og:url" content="https://gtmxagents.com/product" />
+		<meta property="og:title" content="Product — GTMX Agents" />
 		<meta
 			property="og:description"
-			content="Four agents run your raise: investor matching, outreach, conversation tracking and diligence prep, across 5,913 investor firms and 22,338 named partners."
+			content="The four agents — sourcing, outreach, conversations, diligence — what each does unattended, where each stops, and the investor record they work from."
 		/>
 		<meta property="og:image" content="https://gtmxagents.com/og.png" />
 		<meta property="og:image:secure_url" content="https://gtmxagents.com/og.png" />
@@ -46,13 +46,13 @@
 		     it X falls back to a small thumbnail. twitter:image is repeated because
 		     X reads its own namespace first. -->
 		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:title" content="GTMX Agents — agents that run your fundraise" />
+		<meta name="twitter:title" content="Product — GTMX Agents" />
 		<meta
 			name="twitter:description"
-			content="Four agents run your raise: investor matching, outreach, conversation tracking and diligence prep, across 5,913 investor firms and 22,338 named partners."
+			content="The four agents — sourcing, outreach, conversations, diligence — what each does unattended, where each stops, and the investor record they work from."
 		/>
 		<meta name="twitter:image" content="https://gtmxagents.com/og.png" />
-		<meta name="twitter:image:alt" content="GTMX Agents — agents that run your fundraise" />
+		<meta name="twitter:image:alt" content="Product — GTMX Agents" />
 
 		<!-- The ONE webfont on this site: Space Grotesk, display only — headlines,
 		     stat figures, buttons and nav (see the type notes in src/index.css).
@@ -92,12 +92,15 @@
 		<script type="application/ld+json">
 			{
 				"@context": "https://schema.org",
-				"@type": "Organization",
-				"name": "GTMX Agents",
-				"url": "https://gtmxagents.com/",
-				"logo": "https://gtmxagents.com/favicon.svg",
-				"image": "https://gtmxagents.com/og.png",
-				"description": "Four agents run your raise: investor matching, outreach, conversation tracking and diligence prep, across 5,913 investor firms and 22,338 named partners."
+				"@type": "WebPage",
+				"name": "Product — GTMX Agents",
+				"url": "https://gtmxagents.com/product",
+				"description": "The four agents — sourcing, outreach, conversations, diligence — what each does unattended, where each stops, and the investor record they work from.",
+				"isPartOf": {
+					"@type": "WebSite",
+					"name": "GTMX Agents",
+					"url": "https://gtmxagents.com/"
+				}
 			}
 		</script>
 	</head>
@@ -107,14 +110,12 @@
 			     crawlers and text-mode readers a real H1 + value prop instead of an
 			     empty div. Kept inside #root so React's hydration replaces it. -->
 			<noscript>
-				<h1>Agents run the raise.</h1>
+				<h1>An investor database, and agents that work it.</h1>
 				<p>
-					GTMX Agents runs sourcing-in-reverse for founders: investor matching, outreach
-					orchestration, conversation tracking and diligence prep — across 5,913 investor firms
-					and 22,338 named partners.
+					GTMX Agents pairs a maintained record of who invests — at what stage, in what, and who at the firm decides — with agents that turn it into a shortlist, an approach, and a tracked conversation.
 				</p>
 			</noscript>
 		</div>
-		<script type="module" src="/src/main.tsx"></script>
+		<script type="module" src="/src/entries/product.tsx"></script>
 	</body>
 </html>
