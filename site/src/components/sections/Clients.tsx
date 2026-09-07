@@ -8,9 +8,11 @@ import { CLIENTS, LOGO_HEIGHT } from "@/data/clients";
  * Sits directly under the hero: the first thing a founder wants to know is who
  * else trusted this, and proof is more persuasive there than another claim.
  *
- * Marks render greyscale at rest and resolve to full colour on hover, so the
- * row reads as one texture rather than seven competing brand palettes. Entries
- * without a mark yet fall back to a wordmark — see `data/clients.ts`.
+ * Marks are normalised to white and lifted to full opacity on hover. The page
+ * ground is #050506 and the brands span blue, green, cyan and near-black, so
+ * colour marks would read as seven competing palettes and the dark ones would
+ * not read at all. Entries without a usable mark fall back to a wordmark — see
+ * `data/clients.ts`.
  */
 export function Clients(): ReactElement {
 	return (
@@ -36,7 +38,7 @@ export function Clients(): ReactElement {
 										width={client.logoWidth}
 										loading="lazy"
 										decoding="async"
-										className="h-7 w-auto opacity-60 grayscale transition duration-300 ease-out group-hover:opacity-100 group-hover:grayscale-0 motion-reduce:transition-none"
+										className="h-7 w-auto opacity-55 brightness-0 invert transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none"
 									/>
 								) : (
 									<span className="whitespace-nowrap font-display font-semibold text-[1.0625rem] text-ink-subtle leading-none tracking-[-0.01em] transition-colors duration-300 ease-out group-hover:text-ink motion-reduce:transition-none">
