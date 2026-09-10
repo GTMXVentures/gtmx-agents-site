@@ -24,7 +24,7 @@ export function Clients(): ReactElement {
 			<div className="mx-auto max-w-6xl px-6 py-14 sm:px-8 sm:py-16">
 				<Reveal>
 					<h2 id="clients-heading" className="eyebrow text-center">
-						Used by the best
+						Raised for
 					</h2>
 
 					<ul className="mt-9 flex flex-wrap items-center justify-center gap-x-10 gap-y-7 sm:gap-x-14">
