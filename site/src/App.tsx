@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { Shell } from "@/components/Shell";
 import { Agents } from "@/components/sections/Agents";
 import { BackedBy } from "@/components/sections/BackedBy";
+import { Clients } from "@/components/sections/Clients";
 import { Database } from "@/components/sections/Database";
 import { Faq } from "@/components/sections/Faq";
 import { Hero } from "@/components/sections/Hero";
@@ -24,6 +25,7 @@ export default function App(): ReactElement {
 			]}
 		>
 			<Hero />
+			<Clients />
 			<Problem />
 			<Agents />
 			<Database />
