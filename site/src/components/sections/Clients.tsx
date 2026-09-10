@@ -11,8 +11,12 @@ import { CLIENTS, LOGO_HEIGHT } from "@/data/clients";
  * Marks are normalised to white and lifted to full opacity on hover. The page
  * ground is #050506 and the brands span blue, green, cyan and near-black, so
  * colour marks would read as seven competing palettes and the dark ones would
- * not read at all. Entries without a usable mark fall back to a wordmark — see
- * `data/clients.ts`.
+ * not read at all.
+ *
+ * Two per-client escapes, both in `data/clients.ts` and both needed because a
+ * logo wall is optical, not arithmetic: `noInvert` for a lockup whose filled
+ * icon tile inverts to a blank white block, and `logoHeight` because equal box
+ * height does not mean equal apparent size when one lockup carries a tagline.
  */
 export function Clients(): ReactElement {
 	return (
@@ -34,11 +38,19 @@ export function Clients(): ReactElement {
 									<img
 										alt={client.name}
 										src={client.logo}
-										height={LOGO_HEIGHT}
+										height={client.logoHeight ?? LOGO_HEIGHT}
 										width={client.logoWidth}
 										loading="lazy"
 										decoding="async"
-										className="h-7 w-auto opacity-55 brightness-0 invert transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none"
+										// Height is inline because it is per-client and tuned by eye;
+										// Tailwind cannot generate a class per value.
+										style={{ height: `${client.logoHeight ?? LOGO_HEIGHT}px` }}
+										// Unfiltered marks sit at a higher base opacity: the inverted
+										// ones resolve to pure white, so 55% on a mid-tone colour mark
+										// reads noticeably dimmer than its neighbours.
+										className={`w-auto transition-opacity duration-300 ease-out group-hover:opacity-100 motion-reduce:transition-none${
+											client.noInvert ? " opacity-80" : " opacity-55 brightness-0 invert"
+										}`}
 									/>
 								) : (
 									<span className="whitespace-nowrap font-display font-semibold text-[1.0625rem] text-ink-subtle leading-none tracking-[-0.01em] transition-colors duration-300 ease-out group-hover:text-ink motion-reduce:transition-none">
