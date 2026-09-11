@@ -1,7 +1,6 @@
 import type { ReactElement } from "react";
 import { Shell } from "@/components/Shell";
 import { Agents } from "@/components/sections/Agents";
-import { BackedBy } from "@/components/sections/BackedBy";
 import { Clients } from "@/components/sections/Clients";
 import { Database } from "@/components/sections/Database";
 import { Faq } from "@/components/sections/Faq";
@@ -21,7 +20,6 @@ export default function App(): ReactElement {
 			sections={[
 				{ href: "#agents", label: "Agents" },
 				{ href: "#database", label: "Database" },
-				{ href: "#backed-by", label: "Backed By" },
 			]}
 		>
 			<Hero />
@@ -29,7 +27,6 @@ export default function App(): ReactElement {
 			<Problem />
 			<Agents />
 			<Database />
-			<BackedBy />
 			<Faq />
 			<Waitlist />
 		</Shell>

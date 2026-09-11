@@ -59,9 +59,9 @@ export default function Company(): ReactElement {
 							We are building the agents we needed ourselves.
 						</h1>
 						<p className="mt-7 max-w-xl text-ink-muted text-lg leading-[1.7]">
-							GTMX Agents was incubated within GTMX Ventures, which runs fundraising for its own
-							portfolio. The product is that work — investor research, outreach, threads going cold
-							— handed to agents.
+							We run fundraising for startups, and built the agents we kept wishing we had. The
+							product is that work — investor research, outreach, threads going cold — handed to
+							agents.
 						</p>
 						{(legalName || foundedYear) && (
 							<dl className="mt-10 flex flex-wrap gap-x-12 gap-y-4">

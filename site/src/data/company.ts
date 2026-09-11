@@ -30,7 +30,7 @@ export const COMPANY = {
 	/** Product/brand name as used in the UI. */
 	name: "GTMX Agents",
 
-	/** Registered legal entity, e.g. "GTMX Ventures Pvt. Ltd.". */
+	/** Registered legal entity, e.g. "Example Technologies Pvt. Ltd.". */
 	legalName: null as string | null,
 
 	/** Registration identifier (CIN in India). Published on the contact page. */

@@ -28,7 +28,6 @@ export function Footer(): ReactElement {
 				<div>
 					<p className="font-display font-medium text-ink text-sm">{name}</p>
 					<p className="mt-1 text-ink-subtle text-xs">Agent-run fundraising.</p>
-					<p className="mt-3 text-ink-subtle text-xs">Supported by GTMX Ventures.</p>
 					{foundedYear && (
 						<p className="mt-1 text-ink-subtle text-xs">Operating since {foundedYear}.</p>
 					)}
