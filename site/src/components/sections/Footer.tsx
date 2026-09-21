@@ -15,6 +15,8 @@ const NAV = [
 	{ href: "/product", label: "Product" },
 	{ href: "/company", label: "Company" },
 	{ href: "/contact", label: "Contact" },
+	{ href: "/privacy", label: "Privacy Policy" },
+	{ href: "/terms", label: "Terms of Service" },
 ] as const;
 
 export function Footer(): ReactElement {

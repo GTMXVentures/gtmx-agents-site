@@ -28,4 +28,14 @@
 		<changefreq>yearly</changefreq>
 		<priority>0.5</priority>
 	</url>
+	<url>
+		<loc>https://gtmxagents.com/privacy</loc>
+		<changefreq>monthly</changefreq>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://gtmxagents.com/terms</loc>
+		<changefreq>monthly</changefreq>
+		<priority>0.5</priority>
+	</url>
 </urlset>
