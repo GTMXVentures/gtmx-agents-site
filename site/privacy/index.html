@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<!--
+			ALL SEO/social metadata is static, in this file, on purpose.
+			Unfurlers (LinkedIn, Slack, WhatsApp, X) fetch the HTML and do NOT run
+			JavaScript — anything injected by React is invisible to them.
+		-->
+		<title>Privacy Policy — GTMX Agents</title>
+		<meta
+			name="description"
+			content="Privacy Policy for GTMX Agents. Information on how we process data, connect to mailboxes, and adhere to the Google API Services User Data Policy."
+		/>
+		<!-- Absolute canonical: prevents the www host and any workers.dev preview URL
+		     from being indexed as duplicate content. -->
+		<link rel="canonical" href="https://gtmxagents.com/privacy" />
+		<meta name="robots" content="index, follow" />
+
+		<!-- Open Graph -->
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="GTMX Agents" />
+		<meta property="og:url" content="https://gtmxagents.com/privacy" />
+		<meta property="og:title" content="Privacy Policy — GTMX Agents" />
+		<meta
+			property="og:description"
+			content="Privacy Policy for GTMX Agents. Information on how we process data, connect to mailboxes, and adhere to the Google API Services User Data Policy."
+		/>
+		<meta property="og:image" content="https://gtmxagents.com/og.png" />
+		<meta property="og:image:secure_url" content="https://gtmxagents.com/og.png" />
+		<meta property="og:image:type" content="image/png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content="GTMX Agents — agents that run your fundraise" />
+		<meta property="og:locale" content="en_US" />
+
+		<!-- Twitter -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="Privacy Policy — GTMX Agents" />
+		<meta
+			name="twitter:description"
+			content="Privacy Policy for GTMX Agents. Information on how we process data, connect to mailboxes, and adhere to the Google API Services User Data Policy."
+		/>
+		<meta name="twitter:image" content="https://gtmxagents.com/og.png" />
+		<meta name="twitter:image:alt" content="Privacy Policy — GTMX Agents" />
+
+		<!-- Web fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400..700&display=swap"
+		/>
+
+		<meta name="theme-color" content="#000000" />
+		<meta name="color-scheme" content="dark" />
+
+		<!-- Favicons -->
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="apple-touch-icon" href="/favicon.svg" />
+
+		<!-- JSON-LD -->
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "WebPage",
+				"name": "Privacy Policy — GTMX Agents",
+				"url": "https://gtmxagents.com/privacy",
+				"description": "Privacy Policy for GTMX Agents, including Google API Services User Data Policy disclosure.",
+				"isPartOf": {
+					"@type": "WebSite",
+					"name": "GTMX Agents",
+					"url": "https://gtmxagents.com/"
+				}
+			}
+		</script>
+	</head>
+	<body>
+		<div id="root">
+			<noscript>
+				<h1>Privacy Policy</h1>
+				<p>
+					Learn how GTMX Agents handles your data, ensures email security, and complies with Google's Limited Use requirements.
+				</p>
+			</noscript>
+		</div>
+		<script type="module" src="/src/entries/privacy.tsx"></script>
+	</body>
+</html>

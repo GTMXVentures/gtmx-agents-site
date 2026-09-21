@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import { COMPANY } from "@/data/company";
 import Company from "@/pages/Company";
 import Contact from "@/pages/Contact";
+import Privacy from "@/pages/Privacy";
 import Product from "@/pages/Product";
+import Terms from "@/pages/Terms";
 
 /**
  * The load-bearing assertions here are the NEGATIVE ones.
@@ -113,5 +115,63 @@ describe("unset company facts are omitted, never stubbed", () => {
 	it("still publishes the one contact fact we do have", () => {
 		render(<Contact />);
 		expect(screen.getAllByRole("link", { name: COMPANY.email }).length).toBeGreaterThan(0);
+	});
+});
+
+describe("Privacy page", () => {
+	it("renders exactly one h1 with Privacy Policy", () => {
+		render(<Privacy />);
+		const h1s = screen.getAllByRole("heading", { level: 1 });
+		expect(h1s).toHaveLength(1);
+		expect(h1s[0]).toHaveTextContent(/privacy policy/i);
+	});
+
+	it("exposes the banner, main and contentinfo landmarks", () => {
+		render(<Privacy />);
+		expect(screen.getByRole("banner")).toBeInTheDocument();
+		expect(screen.getByRole("main")).toBeInTheDocument();
+		expect(screen.getByRole("contentinfo")).toBeInTheDocument();
+	});
+
+	it("contains the mandatory Google Limited Use disclosure", () => {
+		render(<Privacy />);
+		expect(screen.getByRole("blockquote")).toHaveTextContent(
+			/Google API Services User Data Policy, including the Limited Use requirements/i,
+		);
+	});
+
+	it("never renders placeholder stub text", () => {
+		const { container } = render(<Privacy />);
+		const text = container.textContent ?? "";
+		expect(text).not.toMatch(/\bTBD\b|\bTODO\b|Coming soon|Lorem ipsum/i);
+	});
+});
+
+describe("Terms page", () => {
+	it("renders exactly one h1 with Terms of Service", () => {
+		render(<Terms />);
+		const h1s = screen.getAllByRole("heading", { level: 1 });
+		expect(h1s).toHaveLength(1);
+		expect(h1s[0]).toHaveTextContent(/terms of service/i);
+	});
+
+	it("exposes the banner, main and contentinfo landmarks", () => {
+		render(<Terms />);
+		expect(screen.getByRole("banner")).toBeInTheDocument();
+		expect(screen.getByRole("main")).toBeInTheDocument();
+		expect(screen.getByRole("contentinfo")).toBeInTheDocument();
+	});
+
+	it("contains anti-spam and mailbox authorization obligations", () => {
+		render(<Terms />);
+		expect(
+			screen.getByRole("heading", { name: /Mailbox Connection & Anti-Spam Obligations/i }),
+		).toBeInTheDocument();
+	});
+
+	it("never renders placeholder stub text", () => {
+		const { container } = render(<Terms />);
+		const text = container.textContent ?? "";
+		expect(text).not.toMatch(/\bTBD\b|\bTODO\b|Coming soon|Lorem ipsum/i);
 	});
 });

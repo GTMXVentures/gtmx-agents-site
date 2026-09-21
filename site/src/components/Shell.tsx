@@ -35,7 +35,7 @@ export interface ShellProps {
 	 */
 	sections?: readonly SectionLink[];
 	/** Marks the current page so its nav item can be indicated to assistive tech. */
-	current?: (typeof NAV)[number]["href"] | "/";
+	current?: (typeof NAV)[number]["href"] | "/" | "/privacy" | "/terms";
 	/** Where the skip link lands. Home targets the waitlist; subpages their content. */
 	skipTo?: { href: string; label: string };
 }

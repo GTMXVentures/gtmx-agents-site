@@ -36,6 +36,8 @@ export default defineConfig({
 				product: path.resolve(import.meta.dirname, "product/index.html"),
 				company: path.resolve(import.meta.dirname, "company/index.html"),
 				contact: path.resolve(import.meta.dirname, "contact/index.html"),
+				privacy: path.resolve(import.meta.dirname, "privacy/index.html"),
+				terms: path.resolve(import.meta.dirname, "terms/index.html"),
 			},
 			output: {
 				// Content-hashed filenames for everything. This is what lets
